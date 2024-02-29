@@ -33,6 +33,7 @@ class Game:
         self.all_sprites = pg.sprite.Group()
         self.coins = pg.sprite.Group()
         self.walls = pg.sprite.Group()
+        self.enemies = pg.sprite.Group()
         # self.player = Player(self, 10, 10)
         # for x in range(10, 20):
             # Wall(self, x, 5)
@@ -53,6 +54,8 @@ class Game:
                     self.player = Player(self, col, row)
                 if tile == 'C':
                     Coin(self, col, row)
+                if tile == 'E':
+                    Enemy(self, col, row)
                 
                 
 
@@ -82,7 +85,7 @@ class Game:
         self.screen.fill(BGCOLOR)
         self.draw_grid()
         self.all_sprites.draw(self.screen)
-        self.draw_text(self.screen, "Hello world...", 42, BLACK, 1, 1)
+        self.draw_text(self.screen, "Coin count: " + str(self.player.money), 42, BLACK, 2, 2)
         pg.display.flip()
 
     # input method 
@@ -95,11 +98,13 @@ class Game:
             #     if event.key == pg.K_LEFT:
             #         self.player.move(dx = -1)
             #     if event.key == pg.K_RIGHT:
-            #         self.player.move(dx = 1)
+            #         self.player.move(dx = 1)  
             #     if event.key == pg.K_UP:
             #         self.player.move(dy = -1)
             #     if event.key == pg.K_DOWN:
             #         self.player.move(dy = 1)
+                
+    # draw text
     def draw_text(self, surface, text, size, color, x, y):
         font_name = pg.font.match_font('arial')
         font = pg.font.Font(font_name, size)

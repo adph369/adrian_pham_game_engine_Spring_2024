@@ -3,12 +3,38 @@
 # importing necessary libaries
 
 # my first source control edit
+
+# hp bar, game levels, attack
+
 import pygame as pg  
 from settings import *
 from sprites import *
 import sys
 from random import randint
 from os import path 
+from math import floor
+
+# creating a clock countdown
+class Cooldown():
+    # sets all properties to zero when instantiated
+    def __init__(self):
+        self.current_time = 0
+        self.event_time = 0
+        self.delta = 0
+    # must use ticking to count and keep the clock running
+    def ticking(self):
+        self.current_time = floor((pg.time.get_ticks())/1000)
+        self.delta = self.current_time - self.event_time
+    # resets event time to zero - cooldown reset
+    def countdown(self, x):
+        x = x - self.delta
+        if x != None:
+            return x
+    def event_reset(self):
+        self.event_time = floor((pg.time.get_ticks())/1000)
+    # sets current time
+    def timer(self):
+        self.current_time = floor((pg.time.get_ticks())/1000)
 
 # creating game class
 class Game:
@@ -24,14 +50,19 @@ class Game:
     # load data, save data, etc.
     def load_data(self):
         game_folder = path.dirname(__file__)
+        img_folder = path.join(game_folder, 'images')
+        self.player_img = pg.image.load(path.join(img_folder, 'man.png')).convert_alpha()
         self.map_data = []
         with open(path.join(game_folder, 'map.txt'), 'rt') as f:
             for line in f:
+                print(line)
                 self.map_data.append(line)
 
 
     def new(self):
         # initialize all variables, setup groups, instantiate classes
+        self.text_timer = Cooldown()
+        print("Create new game...")
         self.all_sprites = pg.sprite.Group()
         self.coins = pg.sprite.Group()
         self.walls = pg.sprite.Group()

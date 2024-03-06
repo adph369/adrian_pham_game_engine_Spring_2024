@@ -4,6 +4,7 @@
 import pygame as pg
 from pygame.sprite import Sprite
 from settings import *
+from random import choice
 
 # create a player class
 class Player(Sprite):
@@ -11,8 +12,7 @@ class Player(Sprite):
         self.groups = game.all_sprites
         Sprite.__init__(self, self.groups)
         self.game = game
-        self.image = pg.Surface((TILESIZE, TILESIZE))
-        self.image.fill(GREEN)
+        self.image = game.player_img
         self.rect = self.image.get_rect()
         self.vx, self.vy = 0, 0
         self.x = x * TILESIZE

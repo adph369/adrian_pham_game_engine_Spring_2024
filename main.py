@@ -72,7 +72,7 @@ class Game:
             # Wall(self, x, 5)
         # drawing the game map
         for row, tiles in enumerate(self.map_data):
-            print(self.map_data)
+            # print(self.map_data)
             # print(row)
             # print(tiles)
             # enumerate: assign numbers to terms in a list
@@ -89,6 +89,12 @@ class Game:
                     Coin(self, col, row)
                 if tile == 'E':
                     Enemy(self, col, row)
+        # if self.player.money >= 1:
+        #     for row, tiles in enumerate(self.map_data):
+        #         for col, tile in enumerate(tiles):
+        #             if tile == 'E':
+        #                 Enemy(self, col, row)
+
                 
                 
 

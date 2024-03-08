@@ -118,16 +118,16 @@ class Enemy(Sprite):
         self.image = pg.Surface((TILESIZE, TILESIZE))
         self.image.fill(RED)
         self.rect = self.image.get_rect()
-        self.x = x
-        self.y = y
+        self.x = x * TILESIZE
+        self.y = y * TILESIZE
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
         self.vx, self.vy = ENEMY_SPEED, ENEMY_SPEED
+        self.speed = 1
         if self.vx != 0 and self.vy != 0:
             self.vx *= 0.7071
             self.vy *= 0.7071
-    # def move(self):
-    #     self.vx, self.vy = 1, 1
+
     def collide_with_walls(self, dir):
         if dir == 'x':
             hits = pg.sprite.spritecollide(self, self.game.walls, False)
@@ -136,7 +136,7 @@ class Enemy(Sprite):
                     self.x = hits[0].rect.left - self.rect.width
                 if self.vx < 0:
                     self.x = hits[0].rect.right 
-                self.vx = -self.vx 
+                self.vx = -self.vx
                 self.rect.x = self.x
     # wall collisions; vertically based
         if dir == 'y':
@@ -147,12 +147,21 @@ class Enemy(Sprite):
                 if self.vy < 0:
                     self.y = hits[0].rect.bottom
                 self.vy = -self.vy
-                self.rect.y = self.y    
+                self.rect.y = self.y
+
     def update(self):
         self.x += self.vx * self.game.dt
         self.y += self.vy * self.game.dt
-        self.rect.x = self.x
-        self.rect.y = self.y
+
+        # if self.rect.x < self.game.player.rect.x:
+        #     self.vx = ENEMY_SPEED
+        # if self.rect.x > self.game.player.rect.x:
+        #     self.vx = -ENEMY_SPEED    
+        # if self.rect.y < self.game.player.rect.y:
+        #     self.vy = ENEMY_SPEED
+        # if self.rect.y > self.game.player.rect.y:
+        #     self.vy = -ENEMY_SPEED
         self.collide_with_walls('x')
         self.collide_with_walls('y')
-        
+        self.rect.x = self.x
+        self.rect.y = self.y

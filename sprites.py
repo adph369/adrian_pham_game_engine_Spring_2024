@@ -161,7 +161,7 @@ class Enemy(Sprite):
         #     self.vy = ENEMY_SPEED
         # if self.rect.y > self.game.player.rect.y:
         #     self.vy = -ENEMY_SPEED
-        self.collide_with_walls('x')
-        self.collide_with_walls('y')
         self.rect.x = self.x
+        self.collide_with_walls('x')
         self.rect.y = self.y
+        self.collide_with_walls('y')

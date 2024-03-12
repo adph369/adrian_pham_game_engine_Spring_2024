@@ -41,63 +41,38 @@ class Game:
     # initializes all code in a class
     def __init__(self):
         pg.init()
+        self.new()
         self.screen = pg.display.set_mode((WIDTH, HEIGHT))
         pg.display.set_caption(TITLE)
         self.clock = pg.time.Clock()
         pg.key.set_repeat(500,100)
         self.load_data()
-
+        self.change_level()
+            
     # load data, save data, etc.
     def load_data(self):
         game_folder = path.dirname(__file__)
         img_folder = path.join(game_folder, 'images')
         self.player_img = pg.image.load(path.join(img_folder, 'man.png')).convert_alpha()
         self.map_data = []
-        with open(path.join(game_folder, 'map.txt'), 'rt') as f:
+        map_folder = path.join(game_folder, 'maps')
+        with open(path.join(map_folder, 'map1.txt'), 'rt') as f:
             for line in f:
-                print(line)
                 self.map_data.append(line)
 
-
-    def new(self):
-        # initialize all variables, setup groups, instantiate classes
-        self.text_timer = Cooldown()
-        print("Create new game...")
-        self.all_sprites = pg.sprite.Group()
-        self.coins = pg.sprite.Group()
-        self.walls = pg.sprite.Group()
-        self.enemies = pg.sprite.Group()
-        # self.player = Player(self, 10, 10)
-        # for x in range(10, 20):
-            # Wall(self, x, 5)
-        # drawing the game map
-        for row, tiles in enumerate(self.map_data):
-            # print(self.map_data)
-            # print(row)
-            # print(tiles)
-            # enumerate: assign numbers to terms in a list
-            for col, tile in enumerate(tiles):
-                # print(col)
-                # print(tiles)
-                # 1 in map is a wall
-                if tile == '1':
-                    Wall(self, col, row)
-                # P in map is player
-                if tile == 'P': 
-                    self.player = Player(self, col, row)
-                if tile == 'C':
-                    Coin(self, col, row)
-                if tile == 'E':
-                    Enemy(self, col, row)
-        # if self.player.money >= 1:
-        #     for row, tiles in enumerate(self.map_data):
-        #         for col, tile in enumerate(tiles):
-        #             if tile == 'E':
-        #                 Enemy(self, col, row)
-
+    def change_level(self):
+        for s in self.all_sprites:
+            s.kill()
+        game_folder = path.dirname(__file__)
+        self.map_data = []
+        map_folder = path.join(game_folder, 'maps')
+        if self.player.changelevel == True:
+            self.player.changelevel == False
+            with open(path.join(map_folder, 'map' + str(self.level) + '.txt'), 'rt') as f:
+                for line in f:
+                    self.map_data.append(line)
+    
                 
-                
-
     # defining run method
     def run(self):
         self.playing = True
@@ -125,12 +100,15 @@ class Game:
         self.draw_grid()
         self.all_sprites.draw(self.screen)
         self.draw_text(self.screen, "Coin count: " + str(self.player.money), 42, BLACK, 2, 2)
+        self.draw_text(self.screen, "Health: " + str(self.player.hp), 42, BLACK, 2, 4)
         pg.display.flip()
 
     # input method 
     def events(self):
         for event in pg.event.get():
             if event.type == pg.QUIT:
+                self.quit()
+            if self.player.hp < 0:
                 self.quit()
             # Allow character movement based on arrow keys
             # if event.type == pg.KEYDOWN:
@@ -154,6 +132,42 @@ class Game:
 
     def show_start_screen(self):
         pass
+
+    def new(self):
+        # initialize all variables, setup groups, instantiate classes
+        self.text_timer = Cooldown()
+        print("Create new game...")
+        self.all_sprites = pg.sprite.Group()
+        self.coins = pg.sprite.Group()
+        self.walls = pg.sprite.Group()
+        self.enemies = pg.sprite.Group()
+        self.door = pg.sprite.Group()
+        # self.player = Player(self, 10, 10)
+        # for x in range(10, 20):
+            # Wall(self, x, 5)
+        # drawing the game map
+        for row, tiles in enumerate(self.map_data):
+            # print(self.map_data)
+            # print(row)
+            # print(tiles)
+            # enumerate: assign numbers to terms in a list
+            for col, tile in enumerate(tiles):
+                # print(col)
+                # print(tiles)
+                # 1 in map is a wall
+                if tile == '1':
+                    Wall(self, col, row)
+                # P in map is player
+                if tile == 'P': 
+                    self.player = Player(self, col, row)
+                if tile == 'C':
+                    Coin(self, col, row)
+                if tile == 'E':
+                    Enemy(self, col, row)
+                if tile == 'X':
+                    Chaser(self, col, row)
+                if tile == 'D':
+                    Door(self, col, row)
 
 g = Game()
 

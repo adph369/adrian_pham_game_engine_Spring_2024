@@ -15,25 +15,29 @@ from os import path
 from math import floor
 
 # creating a clock countdown
-class Cooldown():
-    # sets all properties to zero when instantiated
-    def __init__(self):
+class Timer():
+    # sets all properties to zero when instantiated...
+    def __init__(self, game):
+        self.game = game
         self.current_time = 0
         self.event_time = 0
-        self.delta = 0
-    # must use ticking to count and keep the clock running
+        self.cd = 0
+        # ticking ensures the timer is counting...
+    # must use ticking to count up or down
     def ticking(self):
         self.current_time = floor((pg.time.get_ticks())/1000)
-        self.delta = self.current_time - self.event_time
+        if self.cd > 0:
+            self.countdown()
     # resets event time to zero - cooldown reset
-    def countdown(self, x):
-        x = x - self.delta
-        if x != None:
-            return x
-    def event_reset(self):
-        self.event_time = floor((pg.time.get_ticks())/1000)
+    def get_countdown(self):
+        return floor(self.cd)
+    def countdown(self):
+        if self.cd > 0:
+            self.cd = self.cd - self.game.dt
+    # def event_reset(self):
+    #     self.event_time = floor((self.game.clock.)/1000)
     # sets current time
-    def timer(self):
+    def get_current_time(self):
         self.current_time = floor((pg.time.get_ticks())/1000)
 
 # creating game class
@@ -46,6 +50,7 @@ class Game:
         self.clock = pg.time.Clock()
         pg.key.set_repeat(500,100)
         self.load_data()
+
 
     # load data, save data, etc.
     def load_data(self):
@@ -62,9 +67,10 @@ class Game:
 
     def new(self):
         # initialize all variables, setup groups, instantiate classes
-        self.test_timer = Cooldown()
         print("Create new game...")
+        self.cooldown = Timer(self)
         self.all_sprites = pg.sprite.Group()
+        self.health = pg.sprite.Group()
         self.coins = pg.sprite.Group()
         self.walls = pg.sprite.Group()
         self.enemies = pg.sprite.Group()
@@ -99,9 +105,7 @@ class Game:
                 if tile == '!':
                     PowerUp(self, col, row)
 
-
-                
-                
+    
 
     # defining run method
     def run(self):
@@ -131,8 +135,10 @@ class Game:
         self.all_sprites.draw(self.screen)
         self.draw_text(self.screen, "Coin count: " + str(self.player.money), 32, BLACK, 2, 2)
         self.draw_text(self.screen, "Heath: " + str(self.player.hp), 32, BLACK, 2, 4)
-
         pg.display.flip()
+
+     
+
 
     # input method 
     def events(self):
@@ -141,6 +147,7 @@ class Game:
                 self.quit()
             if self.player.hp < 0:
                 self.quit()
+                # print("You died!")
 
                 
     # draw text

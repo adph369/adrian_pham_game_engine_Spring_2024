@@ -21,23 +21,22 @@ class Player(Sprite):
         self.hp = 100
         self.speed = PLAYER_SPEED
         self.gamelevel = 1
-
     # Character position
     # def move(self, dx = 0, dy = 0):
     #     self.x += dx
     #     self.y += dy
     
     def get_keys(self):
+        self.vx, self.vy = 0, 0
         keys = pg.key.get_pressed()
         if keys[pg.K_LEFT] or keys[pg.K_a]:
-            self.vx = -self.speed
+            self.vx = -PLAYER_SPEED
         if keys[pg.K_RIGHT] or keys[pg.K_d]:
-            self.vx = self.speed
-            self.game.test_timer.event_reset()
+            self.vx = PLAYER_SPEED 
         if keys[pg.K_UP] or keys[pg.K_w]:
-            self.vy = -self.speed
+            self.vy = -PLAYER_SPEED  
         if keys[pg.K_DOWN] or keys[pg.K_s]:
-            self.vy = self.speed
+            self.vy = PLAYER_SPEED
         # calculating to reduce speed for diagonal movement, sqrt(2)/2. YAY MATH!
         if self.vx != 0 and self.vy != 0:
             self.vx *= 0.7071
@@ -77,9 +76,11 @@ class Player(Sprite):
                 self.hp -= 2
             if str(hits[0].__class__.__name__) == "Door":
                 self.gamelevel += 1
-            if str(hits[0].__class__.__name__) == "PowerUp":
-                self.vx += 500
-                self.vy += 500
+            # if str(hits[0].__class__.__name__) == "PowerUp":
+            #     self.game.cooldown.cd = 5
+            #     self.cooling = True
+            #     if self.game.cooldown.cd > 0:
+            #         self.speed += 500 
         
     def update(self):
         # self.rect.x = self.x * TILESIZE
@@ -167,15 +168,6 @@ class Enemy(Sprite):
     def update(self):
         self.x += self.vx * self.game.dt
         self.y += self.vy * self.game.dt
-
-        # if self.rect.x < self.game.player.rect.x:
-        #     self.vx = ENEMY_SPEED
-        # if self.rect.x > self.game.player.rect.x:
-        #     self.vx = -ENEMY_SPEED    
-        # if self.rect.y < self.game.player.rect.y:
-        #     self.vy = ENEMY_SPEED
-        # if self.rect.y > self.game.player.rect.y:
-        #     self.vy = -ENEMY_SPEED
         self.rect.x = self.x
         self.collide_with_walls('x')
         self.rect.y = self.y
@@ -262,7 +254,6 @@ class PowerUp(Sprite):
         self.y = y * TILESIZE
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
-
 
 
 

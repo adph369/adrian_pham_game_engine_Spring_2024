@@ -19,8 +19,8 @@ class Player(Sprite):
         self.y = y * TILESIZE
         self.money = 0
         self.hp = 100
-        self.level = 1
-        self.changelevel = False
+        self.speed = PLAYER_SPEED
+        self.gamelevel = 1
 
     # Character position
     # def move(self, dx = 0, dy = 0):
@@ -28,16 +28,16 @@ class Player(Sprite):
     #     self.y += dy
     
     def get_keys(self):
-        self.vx, self.vy = 0, 0
         keys = pg.key.get_pressed()
         if keys[pg.K_LEFT] or keys[pg.K_a]:
-            self.vx = -PLAYER_SPEED
+            self.vx = -self.speed
         if keys[pg.K_RIGHT] or keys[pg.K_d]:
-            self.vx = PLAYER_SPEED 
+            self.vx = self.speed
+            self.game.test_timer.event_reset()
         if keys[pg.K_UP] or keys[pg.K_w]:
-            self.vy = -PLAYER_SPEED  
+            self.vy = -self.speed
         if keys[pg.K_DOWN] or keys[pg.K_s]:
-            self.vy = PLAYER_SPEED
+            self.vy = self.speed
         # calculating to reduce speed for diagonal movement, sqrt(2)/2. YAY MATH!
         if self.vx != 0 and self.vy != 0:
             self.vx *= 0.7071
@@ -76,9 +76,10 @@ class Player(Sprite):
             if str(hits[0].__class__.__name__) == "Chaser":
                 self.hp -= 2
             if str(hits[0].__class__.__name__) == "Door":
-                self.level += 1
-                self.changelevel = True
-
+                self.gamelevel += 1
+            if str(hits[0].__class__.__name__) == "PowerUp":
+                self.vx += 500
+                self.vy += 500
         
     def update(self):
         # self.rect.x = self.x * TILESIZE
@@ -92,6 +93,7 @@ class Player(Sprite):
         self.collide_with_walls('y')
         self.collide_with_obj(self.game.coins, True)
         self.collide_with_obj(self.game.enemies, False)
+        self.collide_with_obj(self.game.powerups, True)
 
 
     
@@ -234,6 +236,7 @@ class Chaser(Sprite):
         self.collide_with_walls('x')
         self.rect.y = self.y
         self.collide_with_walls('y')
+
 class Door(Sprite):
     def __init__(self, game, x, y):
         self.groups = game.all_sprites, game.door
@@ -246,5 +249,20 @@ class Door(Sprite):
         self.y = y * TILESIZE
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
+
+class PowerUp(Sprite):
+    def __init__(self, game, x, y):
+        self.groups = game.all_sprites, game.powerups
+        Sprite.__init__(self, self.groups)
+        self.game = game
+        self.image = pg.Surface((TILESIZE, TILESIZE))
+        self.image.fill(BLUE)
+        self.rect = self.image.get_rect()
+        self.x = x * TILESIZE
+        self.y = y * TILESIZE
+        self.rect.x = x * TILESIZE
+        self.rect.y = y * TILESIZE
+
+
 
 

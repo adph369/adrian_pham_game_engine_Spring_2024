@@ -21,7 +21,7 @@ class Player(Sprite):
         self.money = 0
         self.hp = 100
         self.speed = PLAYER_SPEED
-        self.gamelevel = 1
+        self.changelevel = False
         self.cooling = False
         self.status = ""
     # Character position
@@ -73,24 +73,27 @@ class Player(Sprite):
         if hits:
             if str(hits[0].__class__.__name__) == "Coin":
                 self.money += 1
+                # print("Coin")
             if str(hits[0].__class__.__name__) == "PowerUp":
                 self.game.countdown.cd = 5
                 self.cooling = True
                 # self.vx, self.vy = 500, 500
                 self.status = "Invincible"
+                # print("POWER")
             if str(hits[0].__class__.__name__) == "Enemy":
                 if self.status == "Invincible":
                     self.hp += 0
                 if self.status != "Invincible":
                     self.hp -= 3
+                # print("ENEMy!")
             if str(hits[0].__class__.__name__) == "Chaser":
                 if self.status == "Invincible":
                     self.hp += 0
                 if self.status != "Invincible":
                     self.hp -= 2
+                # print("CHASe")
             if str(hits[0].__class__.__name__) == "Door":
-                self.gamelevel += 1
-
+                self.changelevel = True
         
     def update(self):
         # self.rect.x = self.x * TILESIZE
@@ -105,6 +108,7 @@ class Player(Sprite):
         self.collide_with_obj(self.game.coins, True)
         self.collide_with_obj(self.game.enemies, False)
         self.collide_with_obj(self.game.powerups, True)
+        self.collide_with_obj(self.game.doors, False)
         if self.game.countdown.cd < 1:
             self.cooling = False
         if not self.cooling:
@@ -249,14 +253,14 @@ class Chaser(Sprite):
 
 class Door(Sprite):
     def __init__(self, game, x, y):
-        self.groups = game.all_sprites, game.door
+        self.groups = game.all_sprites, game.doors
         Sprite.__init__(self, self.groups)
         self.game = game
         self.image = pg.Surface((TILESIZE, TILESIZE))
         self.image.fill(GREEN)
         self.rect = self.image.get_rect()
-        self.x = x * TILESIZE
-        self.y = y * TILESIZE
+        self.x = x
+        self.y = y
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
 

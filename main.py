@@ -28,19 +28,48 @@ class Game:
         pg.key.set_repeat(500,100)
         self.load_data()
 
-
     # load data, save data, etc.
     def load_data(self):
+        self.gamelevel = 1
         game_folder = path.dirname(__file__)
         img_folder = path.join(game_folder, 'images')
         map_folder = path.join(game_folder, 'maps')
         self.player_img = pg.image.load(path.join(img_folder, 'man.png')).convert_alpha()
         self.map_data = []
-        with open(path.join(map_folder, 'map1.txt'), 'rt') as f:
+        with open(path.join(map_folder, 'map' + str(self.gamelevel) + '.txt'), 'rt') as f:
             for line in f:
                 # print(line)
                 self.map_data.append(line)
-
+    
+    def change_map(self):
+        game_folder = path.dirname(__file__)
+        map_folder = path.join(game_folder, 'maps')
+        if self.player.changelevel == True:
+            for s in self.all_sprites:
+                s.kill()
+            self.player.changelevel = False
+            self.gamelevel += 1
+            self.map_data = []
+            with open(path.join(map_folder, 'map' + str(self.gamelevel) + '.txt'), 'rt') as f:
+                for line in f:
+                    self.map_data.append(line)
+            for row, tiles in enumerate(self.map_data):
+                for col, tile in enumerate(tiles):
+                    if tile == '1':
+                        Wall(self, col, row)
+                    # P in map is player
+                    if tile == 'P': 
+                        self.player = Player(self, col, row)
+                    if tile == 'C':
+                        Coin(self, col, row)
+                    if tile == 'E':
+                        Enemy(self, col, row)
+                    if tile == 'X':
+                        Chaser(self, col, row)
+                    if tile == 'D':
+                        Door(self, col, row)
+                    if tile == '!':
+                        PowerUp(self, col, row)
 
     def new(self):
         # initialize all variables, setup groups, instantiate classes
@@ -51,7 +80,7 @@ class Game:
         self.coins = pg.sprite.Group()
         self.walls = pg.sprite.Group()
         self.enemies = pg.sprite.Group()
-        self.door = pg.sprite.Group()
+        self.doors = pg.sprite.Group()
         self.powerups = pg.sprite.Group()
         # self.player = Player(self, 10, 10)
         # for x in range(10, 20):
@@ -92,6 +121,8 @@ class Game:
             self.events()
             self.update()
             self.draw()
+            # print(self.gamelevel)
+
     def quit(self):
         pg.quit()
         sys.exit()
@@ -100,6 +131,7 @@ class Game:
     def update(self):
         self.all_sprites.update()
         self.countdown.ticking()
+        self.change_map()
 
     #drawing game
     def draw_grid(self):
@@ -146,7 +178,7 @@ class Game:
         self.draw_grid()
         self.all_sprites.draw(self.screen)
         self.draw_text(self.screen, "Coin count: " + str(self.player.money), 40, BLACK, 1.25, 1.25)
-        # self.draw_text(self.screen, "Heath: " + str(self.player.hp), 32, BLACK, 2, 4)
+        # self.draw_text(self.screen, "Heath: " + str(self.player.hp), 32, WHITE, 2, 4)
         self.draw_health_bar(self.screen, self.player.x, self.player.y + 32, self.player.hp * 3.3)
         pg.display.flip()
 

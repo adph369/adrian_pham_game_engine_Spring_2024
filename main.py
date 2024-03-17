@@ -15,6 +15,7 @@ from random import randint
 from os import path 
 from math import floor
 
+# print(pg.font.get_fonts())
 
 # creating game class
 class Game:
@@ -37,7 +38,7 @@ class Game:
         self.map_data = []
         with open(path.join(map_folder, 'map1.txt'), 'rt') as f:
             for line in f:
-                print(line)
+                # print(line)
                 self.map_data.append(line)
 
 
@@ -106,16 +107,6 @@ class Game:
             pg.draw.line(self.screen, LIGHTGREY, (x, 0), (x, HEIGHT))
         for y in range(0, WIDTH, TILESIZE):
             pg.draw.line(self.screen, LIGHTGREY, (0, y), (WIDTH, y))
-    def draw(self):
-        self.screen.fill(BGCOLOR)
-        self.draw_grid()
-        self.all_sprites.draw(self.screen)
-        self.draw_text(self.screen, "Coin count: " + str(self.player.money), 32, BLACK, 2, 2)
-        self.draw_text(self.screen, "Heath: " + str(self.player.hp), 32, BLACK, 2, 4)
-        pg.display.flip()
-
-     
-
 
     # input method 
     def events(self):
@@ -129,12 +120,35 @@ class Game:
                 
     # draw text
     def draw_text(self, surface, text, size, color, x, y):
-        font_name = pg.font.match_font('arial')
+        font_name = pg.font.match_font('pristina')
         font = pg.font.Font(font_name, size)
         text_surface = font.render(text, True, color)
         text_rect = text_surface.get_rect()
-        text_rect.topleft = (x*TILESIZE,y*TILESIZE)
+        text_rect.topleft = (x * TILESIZE, y * TILESIZE)
         surface.blit(text_surface, text_rect)
+
+    def draw_health_bar(game, surf, x, y, hp):
+        if hp < 0:
+            hp = 0
+        fill = (hp / 100) * BAR_LENGTH
+        # outline_rect = pg.Rect(x, y, BAR_LENGTH, BAR_HEIGHT)
+        fill_rect = pg.Rect(x, y, fill, BAR_HEIGHT)
+        pg.draw.rect(surf, GREEN, fill_rect)
+        if hp < 165:
+            pg.draw.rect(surf, ORANGE, fill_rect)
+        if hp < 82.5:
+            pg.draw.rect(surf, RED, fill_rect)
+
+        # pg.draw.rect(surf, BLACK, outline_rect, 2)   
+
+    def draw(self):
+        self.screen.fill(BGCOLOR)
+        self.draw_grid()
+        self.all_sprites.draw(self.screen)
+        self.draw_text(self.screen, "Coin count: " + str(self.player.money), 40, BLACK, 1.25, 1.25)
+        # self.draw_text(self.screen, "Heath: " + str(self.player.hp), 32, BLACK, 2, 4)
+        self.draw_health_bar(self.screen, self.player.x, self.player.y + 32, self.player.hp * 3.3)
+        pg.display.flip()
 
     def show_start_screen(self):
         pass

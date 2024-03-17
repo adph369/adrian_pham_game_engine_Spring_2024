@@ -9,36 +9,12 @@
 import pygame as pg  
 from settings import *
 from sprites import *
+from clock import *
 import sys
 from random import randint
 from os import path 
 from math import floor
 
-# creating a clock countdown
-class Timer():
-    # sets all properties to zero when instantiated...
-    def __init__(self, game):
-        self.game = game
-        self.current_time = 0
-        self.event_time = 0
-        self.cd = 0
-        # ticking ensures the timer is counting...
-    # must use ticking to count up or down
-    def ticking(self):
-        self.current_time = floor((pg.time.get_ticks())/1000)
-        if self.cd > 0:
-            self.countdown()
-    # resets event time to zero - cooldown reset
-    def get_countdown(self):
-        return floor(self.cd)
-    def countdown(self):
-        if self.cd > 0:
-            self.cd = self.cd - self.game.dt
-    # def event_reset(self):
-    #     self.event_time = floor((self.game.clock.)/1000)
-    # sets current time
-    def get_current_time(self):
-        self.current_time = floor((pg.time.get_ticks())/1000)
 
 # creating game class
 class Game:
@@ -68,7 +44,7 @@ class Game:
     def new(self):
         # initialize all variables, setup groups, instantiate classes
         print("Create new game...")
-        self.cooldown = Timer(self)
+        self.countdown = Timer(self)
         self.all_sprites = pg.sprite.Group()
         self.health = pg.sprite.Group()
         self.coins = pg.sprite.Group()
@@ -122,6 +98,7 @@ class Game:
     #continue to update so that things move; if this was not here the background would not be updated
     def update(self):
         self.all_sprites.update()
+        self.countdown.ticking()
 
     #drawing game
     def draw_grid(self):

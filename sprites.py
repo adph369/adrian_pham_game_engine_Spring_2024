@@ -5,6 +5,7 @@ import pygame as pg
 from pygame.sprite import Sprite
 from settings import *
 from random import choice
+from clock import * 
 
 # create a player class
 class Player(Sprite):
@@ -21,6 +22,8 @@ class Player(Sprite):
         self.hp = 100
         self.speed = PLAYER_SPEED
         self.gamelevel = 1
+        self.cooling = False
+        self.status = ""
     # Character position
     # def move(self, dx = 0, dy = 0):
     #     self.x += dx
@@ -30,13 +33,13 @@ class Player(Sprite):
         self.vx, self.vy = 0, 0
         keys = pg.key.get_pressed()
         if keys[pg.K_LEFT] or keys[pg.K_a]:
-            self.vx = -PLAYER_SPEED
+            self.vx = -self.speed
         if keys[pg.K_RIGHT] or keys[pg.K_d]:
-            self.vx = PLAYER_SPEED 
+            self.vx = self.speed 
         if keys[pg.K_UP] or keys[pg.K_w]:
-            self.vy = -PLAYER_SPEED  
+            self.vy = -self.speed  
         if keys[pg.K_DOWN] or keys[pg.K_s]:
-            self.vy = PLAYER_SPEED
+            self.vy = self.speed
         # calculating to reduce speed for diagonal movement, sqrt(2)/2. YAY MATH!
         if self.vx != 0 and self.vy != 0:
             self.vx *= 0.7071
@@ -70,17 +73,24 @@ class Player(Sprite):
         if hits:
             if str(hits[0].__class__.__name__) == "Coin":
                 self.money += 1
+            if str(hits[0].__class__.__name__) == "PowerUp":
+                self.game.countdown.cd = 5
+                self.cooling = True
+                # self.vx, self.vy = 500, 500
+                self.status = "Invincible"
             if str(hits[0].__class__.__name__) == "Enemy":
-                self.hp -= 3
+                if self.status == "Invincible":
+                    self.hp += 0
+                if self.status != "Invincible":
+                    self.hp -= 3
             if str(hits[0].__class__.__name__) == "Chaser":
-                self.hp -= 2
+                if self.status == "Invincible":
+                    self.hp += 0
+                if self.status != "Invincible":
+                    self.hp -= 2
             if str(hits[0].__class__.__name__) == "Door":
                 self.gamelevel += 1
-            # if str(hits[0].__class__.__name__) == "PowerUp":
-            #     self.game.cooldown.cd = 5
-            #     self.cooling = True
-            #     if self.game.cooldown.cd > 0:
-            #         self.speed += 500 
+
         
     def update(self):
         # self.rect.x = self.x * TILESIZE
@@ -95,7 +105,11 @@ class Player(Sprite):
         self.collide_with_obj(self.game.coins, True)
         self.collide_with_obj(self.game.enemies, False)
         self.collide_with_obj(self.game.powerups, True)
-
+        if self.game.countdown.cd < 1:
+            self.cooling = False
+        if not self.cooling:
+            # self.vx, self.vy = PLAYER_SPEED, PLAYER_SPEED
+            self.status = ""
 
     
 
@@ -143,6 +157,10 @@ class Enemy(Sprite):
         if self.vx != 0 and self.vy != 0:
             self.vx *= 0.7071
             self.vy *= 0.7071
+    # def increase_difficulty(self):
+    #     if Player.money > 2:
+    #         self.vx, self.vy = ENEMY_SPEED + 300, ENEMY_SPEED + 300
+
 
     def collide_with_walls(self, dir):
         if dir == 'x':

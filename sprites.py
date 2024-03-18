@@ -24,11 +24,8 @@ class Player(Sprite):
         self.changelevel = False
         self.cooling = False
         self.status = ""
-    # Character position
-    # def move(self, dx = 0, dy = 0):
-    #     self.x += dx
-    #     self.y += dy
     
+    # movement based on WASD/arrow keys
     def get_keys(self):
         self.vx, self.vy = 0, 0
         keys = pg.key.get_pressed()
@@ -67,37 +64,32 @@ class Player(Sprite):
                     self.y = hits[0].rect.bottom
                 self.vy = 0 
                 self.rect.y = self.y
+
     # collisions with any type of object: type of object, remove or not when collide
     def collide_with_obj(self, group, kill):
         hits = pg.sprite.spritecollide(self, group, kill)
         if hits:
             if str(hits[0].__class__.__name__) == "Coin":
                 self.money += 1
-                # print("Coin")
             if str(hits[0].__class__.__name__) == "PowerUp":
                 self.game.countdown.cd = 5
                 self.cooling = True
                 # self.vx, self.vy = 500, 500
                 self.status = "Invincible"
-                # print("POWER")
             if str(hits[0].__class__.__name__) == "Enemy":
                 if self.status == "Invincible":
                     self.hp += 0
                 if self.status != "Invincible":
                     self.hp -= 3
-                # print("ENEMy!")
             if str(hits[0].__class__.__name__) == "Chaser":
                 if self.status == "Invincible":
                     self.hp += 0
                 if self.status != "Invincible":
                     self.hp -= 2
-                # print("CHASe")
             if str(hits[0].__class__.__name__) == "Door":
                 self.changelevel = True
         
     def update(self):
-        # self.rect.x = self.x * TILESIZE
-        # self.rect.y = self.y * TILESIZE
         self.get_keys()
         self.x += self.vx * self.game.dt
         self.y += self.vy * self.game.dt
@@ -105,10 +97,12 @@ class Player(Sprite):
         self.collide_with_walls('x')
         self.rect.y = self.y
         self.collide_with_walls('y')
+        # activate collisions
         self.collide_with_obj(self.game.coins, True)
         self.collide_with_obj(self.game.enemies, False)
         self.collide_with_obj(self.game.powerups, True)
         self.collide_with_obj(self.game.doors, False)
+        # power-up timer
         if self.game.countdown.cd < 1:
             self.cooling = False
         if not self.cooling:
@@ -161,11 +155,12 @@ class Enemy(Sprite):
         if self.vx != 0 and self.vy != 0:
             self.vx *= 0.7071
             self.vy *= 0.7071
+
     # def increase_difficulty(self):
     #     if Player.money > 2:
     #         self.vx, self.vy = ENEMY_SPEED + 300, ENEMY_SPEED + 300
 
-
+    # wall collisions; horizontally based
     def collide_with_walls(self, dir):
         if dir == 'x':
             hits = pg.sprite.spritecollide(self, self.game.walls, False)
@@ -176,6 +171,7 @@ class Enemy(Sprite):
                     self.x = hits[0].rect.right 
                 self.vx = -self.vx
                 self.rect.x = self.x
+        
     # wall collisions; vertically based
         if dir == 'y':
             hits = pg.sprite.spritecollide(self, self.game.walls, False)
@@ -213,6 +209,7 @@ class Chaser(Sprite):
             self.vx *= 0.7071
             self.vy *= 0.7071
 
+    # wall collisions; horizontally based
     def collide_with_walls(self, dir):
         if dir == 'x':
             hits = pg.sprite.spritecollide(self, self.game.walls, False)
@@ -223,6 +220,7 @@ class Chaser(Sprite):
                     self.x = hits[0].rect.right 
                 self.vx = 0
                 self.rect.x = self.x
+
     # wall collisions; vertically based
         if dir == 'y':
             hits = pg.sprite.spritecollide(self, self.game.walls, False)
@@ -238,6 +236,7 @@ class Chaser(Sprite):
         self.x += self.vx * self.game.dt
         self.y += self.vy * self.game.dt
 
+        # if chaser coordinates are not same as player's move until they are
         if self.rect.x < self.game.player.rect.x:
             self.vx = ENEMY_SPEED
         if self.rect.x > self.game.player.rect.x:
@@ -246,6 +245,7 @@ class Chaser(Sprite):
             self.vy = ENEMY_SPEED
         if self.rect.y > self.game.player.rect.y:
             self.vy = -ENEMY_SPEED
+
         self.rect.x = self.x
         self.collide_with_walls('x')
         self.rect.y = self.y

@@ -1,11 +1,7 @@
 # This file was created by: Adrian Pham
+# added hp bar, game levels, power-ups
 
 # importing necessary libaries
-
-# my first source control edit
-
-# hp bar, game levels, power-ups
-
 import pygame as pg  
 from settings import *
 from sprites import *
@@ -26,9 +22,10 @@ class Game:
         pg.display.set_caption(TITLE)
         self.clock = pg.time.Clock()
         pg.key.set_repeat(500,100)
+        self.gamestage = "playing"
         self.load_data()
 
-    # load data, save data, etc.
+    # load data: images and map
     def load_data(self):
         self.gamelevel = 4
         game_folder = path.dirname(__file__)
@@ -41,10 +38,12 @@ class Game:
                 # print(line)
                 self.map_data.append(line)
     
+    # change level maps
     def change_map(self):
         game_folder = path.dirname(__file__)
         map_folder = path.join(game_folder, 'maps')
         if self.player.changelevel == True:
+            # kills all sprites so that new level does not contain sprites from old level
             for s in self.all_sprites:
                 s.kill()
             self.player.changelevel = False
@@ -57,7 +56,6 @@ class Game:
                 for col, tile in enumerate(tiles):
                     if tile == '1':
                         Wall(self, col, row)
-                    # P in map is player
                     if tile == 'P': 
                         self.player = Player(self, col, row)
                     if tile == 'C':
@@ -82,22 +80,12 @@ class Game:
         self.enemies = pg.sprite.Group()
         self.doors = pg.sprite.Group()
         self.powerups = pg.sprite.Group()
-        # self.player = Player(self, 10, 10)
-        # for x in range(10, 20):
-            # Wall(self, x, 5)
         # drawing the game map
         for row, tiles in enumerate(self.map_data):
-            # print(self.map_data)
-            # print(row)
-            # print(tiles)
-            # enumerate: assign numbers to terms in a list
+            # enumerate: assign numbers to elements in a list
             for col, tile in enumerate(tiles):
-                # print(col)
-                # print(tiles)
-                # 1 in map is a wall
                 if tile == '1':
                     Wall(self, col, row)
-                # P in map is player
                 if tile == 'P': 
                     self.player = Player(self, col, row)
                 if tile == 'C':
@@ -110,44 +98,45 @@ class Game:
                     Door(self, col, row)
                 if tile == '!':
                     PowerUp(self, col, row)
-
-    
-
-    # defining run method
+    # defining run method - what happens while playing
     def run(self):
         self.playing = True
         while self.playing: 
             self.dt = self.clock.tick(FPS) / 1000
             self.events()
-            self.update()
-            self.draw()
+            if self.gamestage == "playing":
+                self.update()
+                self.draw()
             # print(self.gamelevel)
 
+    # quit method
     def quit(self):
         pg.quit()
         sys.exit()
     
-    #continue to update so that things move; if this was not here the background would not be updated
+    #continue to update so that things move; if this was not here the background, timer, and map would not be updated
     def update(self):
         self.all_sprites.update()
         self.countdown.ticking()
         self.change_map()
 
-    #drawing game
+    # drawing game
     def draw_grid(self):
         for x in range(0, WIDTH, TILESIZE):
             pg.draw.line(self.screen, LIGHTGREY, (x, 0), (x, HEIGHT))
         for y in range(0, WIDTH, TILESIZE):
             pg.draw.line(self.screen, LIGHTGREY, (0, y), (WIDTH, y))
 
-    # input method 
+    # input method
     def events(self):
         for event in pg.event.get():
+            # if press X, quit game
             if event.type == pg.QUIT:
                 self.quit()
             if self.player.hp < 0:
+                # self.game_over()
+                print("You died!")
                 self.quit()
-                # print("You died!")
 
                 
     # draw text
@@ -165,24 +154,29 @@ class Game:
         if hp < 0:
             hp = 0
         fill = (hp / 100) * BAR_LENGTH
-        # outline_rect = pg.Rect(x, y, BAR_LENGTH, BAR_HEIGHT)
         fill_rect = pg.Rect(x, y, fill, BAR_HEIGHT)
         pg.draw.rect(surf, GREEN, fill_rect)
         if hp < 165:
             pg.draw.rect(surf, ORANGE, fill_rect)
         if hp < 82.5:
             pg.draw.rect(surf, RED, fill_rect)
-
+        # outline_rect = pg.Rect(x, y, BAR_LENGTH, BAR_HEIGHT)
         # pg.draw.rect(surf, BLACK, outline_rect, 2)   
 
     def draw(self):
         self.screen.fill(BGCOLOR)
-        self.draw_grid()
+        # draws the grid to show squares, unnecessary so removed to look nicer
+        # self.draw_grid()
         self.all_sprites.draw(self.screen)
+        # different positions of the text for every level to prevent overlap :(
         if self.gamelevel == 1:
             self.draw_text(self.screen, "Coin count: " + str(self.player.money), 40, BLACK, 1.25, 1.25)
         if self.gamelevel == 2:
             self.draw_text(self.screen, "Coin count: " + str(self.player.money), 40, BLACK, 3.5, 1.25)
+        if self.gamelevel == 3:
+            self.draw_text(self.screen, "Coin count: " + str(self.player.money), 40, BLACK, 13, 20)
+        if self.gamelevel == 4:
+            self.draw_text(self.screen, "Coin count: " + str(self.player.money), 40, BLACK, 1.25, 1.25)
         # self.draw_text(self.screen, "Health: " + str(self.player.hp), 32, WHITE, 2, 4)
         self.draw_health_bar(self.screen, self.player.x, self.player.y + 32, self.player.hp * 3.3)
         if self.player.status == "Invincible":
@@ -190,16 +184,22 @@ class Game:
                 self.draw_text(self.screen, "You are invincible for 5 seconds!", 30, BLACK, 1.25, 21)
             if self.gamelevel == 2:
                 self.draw_text(self.screen, "You are invincible for 5 seconds!", 25, BLACK, 21.5, 1.25)
+            if self.gamelevel ==3:
+                self.draw_text(self.screen, "You are invincible for 5 seconds!", 25, BLACK, 11.5, 21.5)
+            if self.gamelevel == 4:
+                self.draw_text(self.screen, "You are invincible for 5 seconds!", 30, BLACK, 2.5, 21)
         pg.display.flip()
 
     def show_start_screen(self):
         pass
+    def game_over(self):
+        self.screen.fill(BLACK)
+        # self.gamestage = "Playing"
+        pass
 
 g = Game()
 
-# g.show_start_screen()
 # running the function
 while True:
     g.new()
     g.run()
-    # g.show_go_screen()

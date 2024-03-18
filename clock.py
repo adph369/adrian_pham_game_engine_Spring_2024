@@ -1,4 +1,4 @@
-#This file was created by Adrian Pham
+# This file was created by Adrian Pham with knowledge from Chris Cozort
 
 import pygame as pg 
 from math import floor 

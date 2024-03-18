@@ -18,7 +18,6 @@ class Player(Sprite):
         self.vx, self.vy = 0, 0
         self.x = x * TILESIZE
         self.y = y * TILESIZE
-        self.money = 0
         self.hp = 100
         self.speed = PLAYER_SPEED
         self.changelevel = False
@@ -70,21 +69,20 @@ class Player(Sprite):
         hits = pg.sprite.spritecollide(self, group, kill)
         if hits:
             if str(hits[0].__class__.__name__) == "Coin":
-                self.money += 1
+                self.game.money += 1
             if str(hits[0].__class__.__name__) == "PowerUp":
                 self.game.countdown.cd = 5
                 self.cooling = True
-                # self.vx, self.vy = 500, 500
-                self.status = "Invincible"
+                self.status = choice(POWER_UP_TYPES)
             if str(hits[0].__class__.__name__) == "Enemy":
-                if self.status == "Invincible":
+                if self.status == "invincible":
                     self.hp += 0
-                if self.status != "Invincible":
+                if self.status != "invincible":
                     self.hp -= 3
             if str(hits[0].__class__.__name__) == "Chaser":
-                if self.status == "Invincible":
+                if self.status == "invincible":
                     self.hp += 0
-                if self.status != "Invincible":
+                if self.status != "invincible":
                     self.hp -= 2
             if str(hits[0].__class__.__name__) == "Door":
                 self.changelevel = True
@@ -106,9 +104,11 @@ class Player(Sprite):
         if self.game.countdown.cd < 1:
             self.cooling = False
         if not self.cooling:
-            # self.vx, self.vy = PLAYER_SPEED, PLAYER_SPEED
             self.status = ""
-
+            self.speed = 300
+        if self.status == "speedy":
+            self.speed = 500
+        
     
 
 # create a wall class

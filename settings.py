@@ -28,6 +28,7 @@ TITLE = "That Game"
 
 PLAYER_SPEED = 300
 ENEMY_SPEED = 125
+POWER_UP_TYPES = ["invincible", "speedy"]
 
 
 

@@ -24,10 +24,11 @@ class Game:
         pg.key.set_repeat(500,100)
         self.gamestage = "playing"
         self.load_data()
+        self.money = 0
 
     # load data: images and map
     def load_data(self):
-        self.gamelevel = 4
+        self.gamelevel = 1
         game_folder = path.dirname(__file__)
         img_folder = path.join(game_folder, 'images')
         map_folder = path.join(game_folder, 'maps')
@@ -134,9 +135,10 @@ class Game:
             if event.type == pg.QUIT:
                 self.quit()
             if self.player.hp < 0:
-                # self.game_over()
-                print("You died!")
                 self.quit()
+                # self.game_over()
+                # self.gamestage = "game over"
+                print("You died!")
 
                 
     # draw text
@@ -153,46 +155,50 @@ class Game:
         BAR_HEIGHT = 5
         if hp < 0:
             hp = 0
-        fill = (hp / 100) * BAR_LENGTH
+        fill = (hp / 100 * 3.3) * BAR_LENGTH
         fill_rect = pg.Rect(x, y, fill, BAR_HEIGHT)
         pg.draw.rect(surf, GREEN, fill_rect)
-        if hp < 165:
+        if hp < 50:
             pg.draw.rect(surf, ORANGE, fill_rect)
-        if hp < 82.5:
+        if hp < 25:
             pg.draw.rect(surf, RED, fill_rect)
-        # outline_rect = pg.Rect(x, y, BAR_LENGTH, BAR_HEIGHT)
-        # pg.draw.rect(surf, BLACK, outline_rect, 2)   
 
     def draw(self):
-        self.screen.fill(BGCOLOR)
-        # draws the grid to show squares, unnecessary so removed to look nicer
-        # self.draw_grid()
-        self.all_sprites.draw(self.screen)
-        # different positions of the text for every level to prevent overlap :(
-        if self.gamelevel == 1:
-            self.draw_text(self.screen, "Coin count: " + str(self.player.money), 40, BLACK, 1.25, 1.25)
-        if self.gamelevel == 2:
-            self.draw_text(self.screen, "Coin count: " + str(self.player.money), 40, BLACK, 3.5, 1.25)
-        if self.gamelevel == 3:
-            self.draw_text(self.screen, "Coin count: " + str(self.player.money), 40, BLACK, 13, 20)
-        if self.gamelevel == 4:
-            self.draw_text(self.screen, "Coin count: " + str(self.player.money), 40, BLACK, 1.25, 1.25)
-        # self.draw_text(self.screen, "Health: " + str(self.player.hp), 32, WHITE, 2, 4)
-        self.draw_health_bar(self.screen, self.player.x, self.player.y + 32, self.player.hp * 3.3)
-        if self.player.status == "Invincible":
+        # self.screen.fill(BLACK)
+        # if self.gamestage != "game over":
+            self.screen.fill(BGCOLOR)
+            # draws the grid to show squares, unnecessary so removed to look nicer
+            # self.draw_grid()
+            self.all_sprites.draw(self.screen)
+            # different positions of the text for every level to prevent overlap :(
             if self.gamelevel == 1:
-                self.draw_text(self.screen, "You are invincible for 5 seconds!", 30, BLACK, 1.25, 21)
+                self.draw_text(self.screen, "Coin count: " + str(self.money), 40, BLACK, 1.25, 1.25)
             if self.gamelevel == 2:
-                self.draw_text(self.screen, "You are invincible for 5 seconds!", 25, BLACK, 21.5, 1.25)
-            if self.gamelevel ==3:
-                self.draw_text(self.screen, "You are invincible for 5 seconds!", 25, BLACK, 11.5, 21.5)
+                self.draw_text(self.screen, "Coin count: " + str(self.money), 40, BLACK, 3.5, 1.25)
+            if self.gamelevel == 3:
+                self.draw_text(self.screen, "Coin count: " + str(self.money), 40, BLACK, 13, 20)
             if self.gamelevel == 4:
-                self.draw_text(self.screen, "You are invincible for 5 seconds!", 30, BLACK, 2.5, 21)
-        pg.display.flip()
+                self.draw_text(self.screen, "Coin count: " + str(self.money), 40, BLACK, 1.25, 1.25)
+            # self.draw_text(self.screen, "Health: " + str(self.player.hp), 32, WHITE, 2, 4)
+            self.draw_health_bar(self.screen, self.player.x, self.player.y + 32, self.player.hp)
+            if self.player.status != "":
+                if self.gamelevel == 1:
+                    self.draw_text(self.screen, "You are " + str(self.player.status) + " for 5 seconds!", 30, BLACK, 1.25, 21)
+                if self.gamelevel == 2:
+                    self.draw_text(self.screen, "You are " + str(self.player.status) + " for 5 seconds!", 25, BLACK, 21.5, 1.25)
+                if self.gamelevel ==3:
+                    self.draw_text(self.screen, "You are " + str(self.player.status) + " for 5 seconds!", 25, BLACK, 11.5, 21.5)
+                if self.gamelevel == 4:
+                    self.draw_text(self.screen, "You are " + str(self.player.status) + " for 5 seconds!", 30, BLACK, 2.5, 21)
+            pg.display.flip()
 
     def show_start_screen(self):
         pass
+
     def game_over(self):
+        self.screen.fill(BLACK)
+        for s in self.all_sprites:
+            s.kill()
         self.screen.fill(BLACK)
         # self.gamestage = "Playing"
         pass

@@ -30,7 +30,7 @@ class Game:
 
     # load data, save data, etc.
     def load_data(self):
-        self.gamelevel = 1
+        self.gamelevel = 4
         game_folder = path.dirname(__file__)
         img_folder = path.join(game_folder, 'images')
         map_folder = path.join(game_folder, 'maps')
@@ -160,6 +160,8 @@ class Game:
         surface.blit(text_surface, text_rect)
 
     def draw_health_bar(game, surf, x, y, hp):
+        BAR_LENGTH = 10
+        BAR_HEIGHT = 5
         if hp < 0:
             hp = 0
         fill = (hp / 100) * BAR_LENGTH
@@ -177,9 +179,17 @@ class Game:
         self.screen.fill(BGCOLOR)
         self.draw_grid()
         self.all_sprites.draw(self.screen)
-        self.draw_text(self.screen, "Coin count: " + str(self.player.money), 40, BLACK, 1.25, 1.25)
-        # self.draw_text(self.screen, "Heath: " + str(self.player.hp), 32, WHITE, 2, 4)
+        if self.gamelevel == 1:
+            self.draw_text(self.screen, "Coin count: " + str(self.player.money), 40, BLACK, 1.25, 1.25)
+        if self.gamelevel == 2:
+            self.draw_text(self.screen, "Coin count: " + str(self.player.money), 40, BLACK, 3.5, 1.25)
+        # self.draw_text(self.screen, "Health: " + str(self.player.hp), 32, WHITE, 2, 4)
         self.draw_health_bar(self.screen, self.player.x, self.player.y + 32, self.player.hp * 3.3)
+        if self.player.status == "Invincible":
+            if self.gamelevel == 1:
+                self.draw_text(self.screen, "You are invincible for 5 seconds!", 30, BLACK, 1.25, 21)
+            if self.gamelevel == 2:
+                self.draw_text(self.screen, "You are invincible for 5 seconds!", 25, BLACK, 21.5, 1.25)
         pg.display.flip()
 
     def show_start_screen(self):

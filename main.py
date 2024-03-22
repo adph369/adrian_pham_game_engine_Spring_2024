@@ -22,9 +22,10 @@ class Game:
         pg.display.set_caption(TITLE)
         self.clock = pg.time.Clock()
         pg.key.set_repeat(500,100)
-        self.gamestage = "playing"
+        self.gamestage = "start"
         self.load_data()
         self.money = 0
+        self.cooling = False
 
     # load data: images and map
     def load_data(self):
@@ -33,6 +34,7 @@ class Game:
         img_folder = path.join(game_folder, 'images')
         map_folder = path.join(game_folder, 'maps')
         self.player_img = pg.image.load(path.join(img_folder, 'man.png')).convert_alpha()
+        self.coin_img = pg.image.load(path.join(img_folder, 'coin.png')).convert_alpha()
         self.map_data = []
         with open(path.join(map_folder, 'map' + str(self.gamelevel) + '.txt'), 'rt') as f:
             for line in f:
@@ -47,6 +49,7 @@ class Game:
             # kills all sprites so that new level does not contain sprites from old level
             for s in self.all_sprites:
                 s.kill()
+            # sets to false so that the level doesn't keep running
             self.player.changelevel = False
             self.gamelevel += 1
             self.map_data = []
@@ -69,7 +72,7 @@ class Game:
                         Door(self, col, row)
                     if tile == '!':
                         PowerUp(self, col, row)
-
+                        
     def new(self):
         # initialize all variables, setup groups, instantiate classes
         print("Create new game...")
@@ -105,9 +108,13 @@ class Game:
         while self.playing: 
             self.dt = self.clock.tick(FPS) / 1000
             self.events()
+            if self.gamestage == "start":
+                self.show_start_screen()
             if self.gamestage == "playing":
                 self.update()
                 self.draw()
+            if self.gamestage == "death":
+                self.game_over()
             # print(self.gamelevel)
 
     # quit method
@@ -135,10 +142,10 @@ class Game:
             if event.type == pg.QUIT:
                 self.quit()
             if self.player.hp < 0:
-                self.quit()
-                # self.game_over()
-                # self.gamestage = "game over"
-                print("You died!")
+                # self.quit()
+                self.player.hp = 100
+                self.gamestage = "death"
+                # print("You died!")
 
                 
     # draw text
@@ -150,18 +157,20 @@ class Game:
         text_rect.topleft = (x * TILESIZE, y * TILESIZE)
         surface.blit(text_surface, text_rect)
 
-    def draw_health_bar(game, surf, x, y, hp):
+    # draw health bar
+    def draw_health_bar(game, surface, x, y, hp):
         BAR_LENGTH = 10
         BAR_HEIGHT = 5
         if hp < 0:
             hp = 0
         fill = (hp / 100 * 3.3) * BAR_LENGTH
         fill_rect = pg.Rect(x, y, fill, BAR_HEIGHT)
-        pg.draw.rect(surf, GREEN, fill_rect)
+        # as hp decreases, bar color changes
+        pg.draw.rect(surface, GREEN, fill_rect)
         if hp < 50:
-            pg.draw.rect(surf, ORANGE, fill_rect)
+            pg.draw.rect(surface, ORANGE, fill_rect)
         if hp < 25:
-            pg.draw.rect(surf, RED, fill_rect)
+            pg.draw.rect(surface, RED, fill_rect)
 
     def draw(self):
         # self.screen.fill(BLACK)
@@ -193,15 +202,32 @@ class Game:
             pg.display.flip()
 
     def show_start_screen(self):
-        pass
-
+        self.screen.fill(LIGHTGREEN)
+        keys = pg.key.get_pressed()
+        self.draw_text(self.screen, "Welcome to That Game!", 90, BLACK, 5, 7.5)
+        self.draw_text(self.screen, "Press space to start!", 60, BLACK, 10, 15)
+        if keys[pg.K_SPACE]:
+            self.gamestage = "playing"
+        pg.display.flip()
+        self.run()
+        
+            
     def game_over(self):
         self.screen.fill(BLACK)
         for s in self.all_sprites:
             s.kill()
-        self.screen.fill(BLACK)
-        # self.gamestage = "Playing"
-        pass
+        # self.player.hp = 100
+        self.draw_text(self.screen, "Game Over! :(", 60, WHITE, 12, 15)
+        self.countdown.cd = 5
+        if self.countdown.cd > 2 and self.countdown.cd < 2.1:
+            self.cooling = True
+        if self.cooling == True:
+            self.quit()
+        # self.draw_text(self.screen, "Press R to restart!", 60, WHITE, 10, 15)
+        # keys = pg.key.get_pressed()
+        # if keys[pg.K_r]:
+        #     self.gamestage = "start"
+        pg.display.flip()
 
 g = Game()
 

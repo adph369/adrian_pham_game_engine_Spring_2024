@@ -9,6 +9,7 @@ from clock import *
 
 # create a player class
 class Player(Sprite):
+    # initialize the class, create its attributes
     def __init__(self, game, x, y):
         self.groups = game.all_sprites
         Sprite.__init__(self, self.groups)
@@ -70,10 +71,12 @@ class Player(Sprite):
         if hits:
             if str(hits[0].__class__.__name__) == "Coin":
                 self.game.money += 1
+            # timed power-ups
             if str(hits[0].__class__.__name__) == "PowerUp":
                 self.game.countdown.cd = 5
                 self.cooling = True
                 self.status = choice(POWER_UP_TYPES)
+            # if invincible, no dmg taken
             if str(hits[0].__class__.__name__) == "Enemy":
                 if self.status == "invincible":
                     self.hp += 0
@@ -86,7 +89,8 @@ class Player(Sprite):
                     self.hp -= 2
             if str(hits[0].__class__.__name__) == "Door":
                 self.changelevel = True
-        
+    
+    # constantly updates player position and movement
     def update(self):
         self.get_keys()
         self.x += self.vx * self.game.dt
@@ -125,6 +129,7 @@ class Wall(Sprite):
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
 
+# coin class
 class Coin(Sprite):
     def __init__(self, game, x, y):
         self.groups = game.all_sprites, game.coins
@@ -137,6 +142,7 @@ class Coin(Sprite):
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
 
+# enemy class
 class Enemy(Sprite):
     def __init__(self, game, x, y):
         self.groups = game.all_sprites, game.enemies
@@ -181,7 +187,8 @@ class Enemy(Sprite):
                     self.y = hits[0].rect.bottom
                 self.vy = -self.vy
                 self.rect.y = self.y
-
+    
+    # constantly updates position, speed, collisions
     def update(self):
         self.x += self.vx * self.game.dt
         self.y += self.vy * self.game.dt
@@ -190,6 +197,7 @@ class Enemy(Sprite):
         self.rect.y = self.y
         self.collide_with_walls('y')
 
+# chaser (type of enemy) class
 class Chaser(Sprite):
     def __init__(self, game, x, y):
         self.groups = game.all_sprites, game.enemies
@@ -231,6 +239,7 @@ class Chaser(Sprite):
                 self.vy = 0
                 self.rect.y = self.y
 
+    # constantly updates motion and position
     def update(self):
         self.x += self.vx * self.game.dt
         self.y += self.vy * self.game.dt
@@ -250,6 +259,7 @@ class Chaser(Sprite):
         self.rect.y = self.y
         self.collide_with_walls('y')
 
+# create door class
 class Door(Sprite):
     def __init__(self, game, x, y):
         self.groups = game.all_sprites, game.doors
@@ -263,6 +273,7 @@ class Door(Sprite):
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
 
+# create power-up class
 class PowerUp(Sprite):
     def __init__(self, game, x, y):
         self.groups = game.all_sprites, game.powerups

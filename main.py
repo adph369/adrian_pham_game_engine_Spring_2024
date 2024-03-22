@@ -108,6 +108,7 @@ class Game:
         while self.playing: 
             self.dt = self.clock.tick(FPS) / 1000
             self.events()
+            # shows which screen based on conditions
             if self.gamestage == "start":
                 self.show_start_screen()
             if self.gamestage == "playing":
@@ -128,7 +129,7 @@ class Game:
         self.countdown.ticking()
         self.change_map()
 
-    # drawing game
+    # draw grid
     def draw_grid(self):
         for x in range(0, WIDTH, TILESIZE):
             pg.draw.line(self.screen, LIGHTGREY, (x, 0), (x, HEIGHT))
@@ -141,6 +142,7 @@ class Game:
             # if press X, quit game
             if event.type == pg.QUIT:
                 self.quit()
+            # if hp < 0, set hp to 100 so that it doesn't keep dying, and show death screen
             if self.player.hp < 0:
                 # self.quit()
                 self.player.hp = 100
@@ -201,6 +203,7 @@ class Game:
                     self.draw_text(self.screen, "You are " + str(self.player.status) + " for 5 seconds!", 30, BLACK, 2.5, 21)
             pg.display.flip()
 
+    # show the start screen, if space pressed start playing
     def show_start_screen(self):
         self.screen.fill(LIGHTGREEN)
         keys = pg.key.get_pressed()
@@ -211,7 +214,7 @@ class Game:
         pg.display.flip()
         self.run()
         
-            
+    # game over screen
     def game_over(self):
         self.screen.fill(BLACK)
         for s in self.all_sprites:

@@ -6,6 +6,38 @@ from pygame.sprite import Sprite
 from settings import *
 from random import choice
 from clock import * 
+from os import path
+
+dir = path.dirname(__file__)
+img_dir = path.join(dir, 'images')
+
+class Spritesheet:
+    def __init__(self, filename):
+        # utility class for loading and parsing spritesheets
+        self.spritesheet = pg.image.load(filename).convert()
+
+    def get_image(self, x, y, width, height):
+        # grab an image out of a larger spritesheet
+        image = pg.Surface((width, height))
+        image.blit(self.spritesheet, (0, 0), (x, y, width, height))
+        # image = pg.transform.scale(image, (width, height))
+        image = pg.transform.scale(image, (width * 4, height * 4))
+        return image
+    
+class Animated_sprite(Sprite):
+    def __init__(self):
+        Sprite.__init__(self)
+        self.spritesheet = Spritesheet(path.join(img_dir, SPRITESHEET))
+        self.load_images()
+        self.image = self.standing_frames[0]
+        self.rect = self.image.get_rect()
+        self.jumping = False
+        self.walking = False
+        self.current_frame = 0
+        self.last_update = 0
+
+
+
 
 # create a player class
 class Player(Sprite):

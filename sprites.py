@@ -8,9 +8,10 @@ from random import choice
 from clock import * 
 from os import path
 
-dir = path.dirname(__file__)
-img_dir = path.join(dir, 'images')
+game_folder = path.dirname(__file__)
+image_folder = path.join(game_folder, 'images')
 
+SPRITESHEET = "manmove.png"
 class Spritesheet:
     def __init__(self, filename):
         # utility class for loading and parsing spritesheets
@@ -20,24 +21,9 @@ class Spritesheet:
         # grab an image out of a larger spritesheet
         image = pg.Surface((width, height))
         image.blit(self.spritesheet, (0, 0), (x, y, width, height))
-        # image = pg.transform.scale(image, (width, height))
-        image = pg.transform.scale(image, (width * 4, height * 4))
+        image = pg.transform.scale(image, (width, height))
+        # image = pg.transform.scale(image, (width * 4, height * 4))
         return image
-    
-class Animated_sprite(Sprite):
-    def __init__(self):
-        Sprite.__init__(self)
-        self.spritesheet = Spritesheet(path.join(img_dir, SPRITESHEET))
-        self.load_images()
-        self.image = self.standing_frames[0]
-        self.rect = self.image.get_rect()
-        self.jumping = False
-        self.walking = False
-        self.current_frame = 0
-        self.last_update = 0
-
-
-
 
 # create a player class
 class Player(Sprite):
@@ -46,7 +32,11 @@ class Player(Sprite):
         self.groups = game.all_sprites
         Sprite.__init__(self, self.groups)
         self.game = game
-        self.image = game.player_img
+        # self.image = game.player_img
+        self.image = pg.Surface((TILESIZE, TILESIZE))
+        self.spritesheet = Spritesheet(path.join(image_folder, SPRITESHEET))
+        self.load_images()
+        self.image = self.standing_frames[0]
         self.rect = self.image.get_rect()
         self.vx, self.vy = 0, 0
         self.x = x * TILESIZE
@@ -56,6 +46,30 @@ class Player(Sprite):
         self.changelevel = False
         self.cooling = False
         self.status = ""
+        self.current_frame = 0
+        self.last_update = 0 
+        self.material = True
+        self.jumping = False
+        self.walking = False        
+
+    def load_images(self):
+        self.standing_frames = [self.spritesheet.get_image(0, 0, 32, 32), self.spritesheet.get_image(32, 0, 32, 32)]
+        self.walking_frames = [self.spritesheet.get_image(0, 0, 32, 32), self.spritesheet.get_image(32, 0, 32, 32)]
+    
+    
+    def animate(self):
+        now = pg.time.get_ticks()
+        if now - self.last_update > 350:
+            self.last_update = now
+            self.current_frame = (self.current_frame + 1) % len(self.standing_frames)
+            bottom = self.rect.bottom
+            if not self.walking:
+                self.image = self.standing_frames[self.current_frame]
+            else:
+                self.image = self.walking_frames[self.current_frame]
+            self.rect = self.image.get_rect()
+            self.rect.bottom = bottom 
+
     
     # movement based on WASD/arrow keys
     def get_keys(self):
@@ -124,6 +138,7 @@ class Player(Sprite):
     
     # constantly updates player position and movement
     def update(self):
+        self.animate()
         self.get_keys()
         self.x += self.vx * self.game.dt
         self.y += self.vy * self.game.dt
@@ -318,6 +333,63 @@ class PowerUp(Sprite):
         self.y = y * TILESIZE
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
+
+class Shop(Sprite):
+    def __init__(self, game):
+        self.game = game 
+        self.x = TILESIZE
+        self.y = TILESIZE
+        self.surface = pg.Surface((TILESIZE, TILESIZE), pg.SRCALPHA)
+
+    def toggle(self):
+        self.opened = not self.opened
+
+    def draw(self, surface):
+        if self.opened:
+            self.game.screen.blit(self.surface, (self.x, self.y))
+        pg.draw.rect(surface, self.color, (50, 550, TILESIZE * 8, TILESIZE * 5))
+
+    
+class Button():
+    # Initialize Class
+    def init(self, game, img, scale):
+        height = img.get_height()
+        width = img.get_width()
+        self.game = game
+        self.image = pg.transform.scale(img, (int(width * scale), int(height * scale)))
+        self.rect = self.image.get_rect()
+        self.clicked = False
+
+    # Drawing the button
+    def draw(self, surface, x, y):
+        action = False
+
+        # Finding mouse location
+        mousepos = pg.mouse.get_pos()
+
+        self.rect.midtop = (x,y)
+
+
+        # Checking mouse and button status
+        if self.rect.collidepoint(mousepos):
+            if pg.mouse.get_pressed()[0] == 1 and self.clicked == False:
+                self.clicked = True
+                action = False
+            if pg.mouse.get_pressed()[0] == 0 and self.clicked == True:
+                self.clicked = False
+                action = True
+        else:
+            self.clicked = False
+
+        if pg.mouse.get_pressed()[0] == 0:
+            self.clicked = False
+
+        # Drawing the button
+        surface.blit(self.image, (self.rect.x, self.rect.y))
+
+        # Return pressed or not pressed
+        return action
+
 
 
 

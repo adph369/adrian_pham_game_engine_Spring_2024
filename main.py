@@ -1,5 +1,7 @@
+'''
 # This file was created by: Adrian Pham
 # added hp bar, game levels, power-ups
+'''
 
 # importing necessary libaries
 import pygame as pg  
@@ -22,10 +24,13 @@ class Game:
         pg.display.set_caption(TITLE)
         self.clock = pg.time.Clock()
         pg.key.set_repeat(500,100)
+        self.shop_open = False
+        self.shop = Shop(self)
         self.gamestage = "start"
         self.load_data()
         self.money = 0
         self.cooling = False
+        self.dead = False
 
     # load data: images and map
     def load_data(self):
@@ -128,6 +133,8 @@ class Game:
         self.all_sprites.update()
         self.countdown.ticking()
         self.change_map()
+        self.countdown.quit_timer()
+
 
     # draw grid
     def draw_grid(self):
@@ -148,6 +155,16 @@ class Game:
                 self.player.hp = 100
                 self.gamestage = "death"
                 # print("You died!")
+            if event.type == pg.KEYDOWN:
+                if self.gamestage == "death":  # Only handle "R" key when on game over screen
+                    if event.key == pg.K_r:
+                        self.restart_game()
+                if self.money > 0:             
+                    if event.key == pg.K_q:
+                        self.toggle_shop()
+
+
+
 
                 
     # draw text
@@ -201,6 +218,11 @@ class Game:
                     self.draw_text(self.screen, "You are " + str(self.player.status) + " for 5 seconds!", 25, BLACK, 11.5, 21.5)
                 if self.gamelevel == 4:
                     self.draw_text(self.screen, "You are " + str(self.player.status) + " for 5 seconds!", 30, BLACK, 2.5, 21)
+            if self.shop_open:
+                self.shop.draw(self.screen)
+            if self.money > 0:
+                self.draw_text(self.screen, "Press Q to open shop!", 20, BLACK, 1.25, 2.75)
+
             pg.display.flip()
 
     # show the start screen, if space pressed start playing
@@ -220,18 +242,22 @@ class Game:
         for s in self.all_sprites:
             s.kill()
         # self.player.hp = 100
-        self.draw_text(self.screen, "Game Over! :(", 60, WHITE, 12, 15)
-        self.countdown.cd = 5
-        if self.countdown.cd > 2 and self.countdown.cd < 2.1:
-            self.cooling = True
-        if self.cooling == True:
-            self.quit()
-        # self.draw_text(self.screen, "Press R to restart!", 60, WHITE, 10, 15)
+        # self.draw_text(self.screen, "Game Over! :(", 60, WHITE, 12, 15)
+        # self.countdown.quit_timer()
+        self.draw_text(self.screen, "Press R to restart!", 60, WHITE, 10, 15)
         # keys = pg.key.get_pressed()
         # if keys[pg.K_r]:
         #     self.gamestage = "start"
+        #     for s in self.all_sprites:
+        #         s.kill()
         pg.display.flip()
 
+    def restart_game(self):
+        self.gamestage = "start"  # Set the game stage to start
+        self.money = 0
+        self.new()
+        
+    
 g = Game()
 
 # running the function

@@ -337,59 +337,79 @@ class PowerUp(Sprite):
 class Shop(Sprite):
     def __init__(self, game):
         self.game = game 
-        self.x = TILESIZE
-        self.y = TILESIZE
-        self.surface = pg.Surface((TILESIZE, TILESIZE), pg.SRCALPHA)
+        self.visible = False
+        self.width = 260
+        self.height = 160
+        self.color = TRANSPARENT_BEIGE
+        self.x = 50
+        self.y = 550
+        # self.menu_surface = pg.Surface((self.width, self.height))
+        self.menu_surface = pg.Surface((self.width, self.height), flags=pg.SRCALPHA)
+        self.menu_surface.fill(TRANSPARENT_BEIGE)
 
-    def toggle(self):
-        self.opened = not self.opened
+    def draw_menu(self, screen):
+        if self.visible:
+            self.menu_surface.fill(TRANSPARENT_BEIGE)
+            pg.draw.rect(self.menu_surface, self.color, (self.x, self.y, TILESIZE * 8, TILESIZE * 5))
+            screen.blit(self.menu_surface, (self.x, self.y))
 
-    def draw(self, surface):
-        if self.opened:
-            self.game.screen.blit(self.surface, (self.x, self.y))
-        pg.draw.rect(surface, self.color, (50, 550, TILESIZE * 8, TILESIZE * 5))
+    def toggle_visibility(self):
+        self.visible = not self.visible
 
-    
-class Button():
-    # Initialize Class
-    def init(self, game, img, scale):
-        height = img.get_height()
-        width = img.get_width()
+# done with help from ChatGPT
+class Button:
+    def __init__(self, game, text, position, size, color, hover_color, action = None, clickable = True):
         self.game = game
-        self.image = pg.transform.scale(img, (int(width * scale), int(height * scale)))
-        self.rect = self.image.get_rect()
-        self.clicked = False
+        self.text = text
+        self.position = position
+        self.size = size
+        self.color = color
+        self.hover_color = hover_color
+        self.action = action
+        self.font = pg.font.Font(None, 32)  # Font for button text
+        self.hovered = False
+        self.clickable = clickable
 
-    # Drawing the button
-    def draw(self, surface, x, y):
-        action = False
+    def draw(self, screen):
+        
+        clickable = self.is_clickable()
+        # Create a button rectangle at the specified position and size
+        button_rect = pg.Rect(self.position, self.size)
 
-        # Finding mouse location
-        mousepos = pg.mouse.get_pos()
-
-        self.rect.midtop = (x,y)
-
-
-        # Checking mouse and button status
-        if self.rect.collidepoint(mousepos):
-            if pg.mouse.get_pressed()[0] == 1 and self.clicked == False:
-                self.clicked = True
-                action = False
-            if pg.mouse.get_pressed()[0] == 0 and self.clicked == True:
-                self.clicked = False
-                action = True
+        # Change button color when hovered
+        if self.hovered and self.clickable:
+            color = self.hover_color
         else:
-            self.clicked = False
+            color = self.color
 
-        if pg.mouse.get_pressed()[0] == 0:
-            self.clicked = False
+        # Draw button rectangle
+        pg.draw.rect(screen, color, button_rect)
 
-        # Drawing the button
-        surface.blit(self.image, (self.rect.x, self.rect.y))
+        # Render button text
+        text_surface = self.font.render(self.text, True, pg.Color('white'))
+        text_rect = text_surface.get_rect(center=button_rect.center)
+        screen.blit(text_surface, text_rect)
 
-        # Return pressed or not pressed
-        return action
+    def handle_event(self, event):
+        if self.clickable:
+            if event.type == pg.MOUSEMOTION:
+                # Check if mouse is hovering over the button
+                self.hovered = self.is_hovered(event.pos)
+            elif event.type == pg.MOUSEBUTTONDOWN:
+                if self.hovered and self.action:
+                    # Execute button action if clicked
+                    self.action()
 
+    def is_hovered(self, mouse_pos):
+        # Check if mouse position is within button bounds
+        button_rect = pg.Rect(self.position, self.size)
+        return button_rect.collidepoint(mouse_pos)
 
+    def set_clickable(self, clickable):
+        self.clickable = clickable 
 
-
+    def is_clickable(self):
+        if self.game.money >= 5:
+            self.set_clickable(True)
+        else:
+            self.set_clickable(False)      

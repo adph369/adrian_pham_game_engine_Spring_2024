@@ -82,6 +82,8 @@ class Game:
         # initialize all variables, setup groups, instantiate classes
         print("Create new game...")
         self.countdown = Timer(self)
+        self.shop = Shop(g)
+        self.button = Button(self, "BUY", (self.shop.x + 55, self.shop.y + 100), (150, 50), FORESTGREEN, CANDYRED, action=self.button_action, clickable = True)
         self.all_sprites = pg.sprite.Group()
         self.health = pg.sprite.Group()
         self.coins = pg.sprite.Group()
@@ -134,6 +136,8 @@ class Game:
         self.countdown.ticking()
         self.change_map()
         self.countdown.quit_timer()
+        if self.shop.visible:
+            self.shop.draw_menu(self.screen)
 
 
     # draw grid
@@ -151,17 +155,16 @@ class Game:
                 self.quit()
             # if hp < 0, set hp to 100 so that it doesn't keep dying, and show death screen
             if self.player.hp < 0:
-                # self.quit()
                 self.player.hp = 100
                 self.gamestage = "death"
-                # print("You died!")
             if event.type == pg.KEYDOWN:
-                if self.gamestage == "death":  # Only handle "R" key when on game over screen
+                if self.gamestage == "death": 
                     if event.key == pg.K_r:
                         self.restart_game()
                 if self.money > 0:             
                     if event.key == pg.K_q:
-                        self.toggle_shop()
+                        self.shop.toggle_visibility()
+            self.button.handle_event(event)
 
 
 
@@ -218,12 +221,22 @@ class Game:
                     self.draw_text(self.screen, "You are " + str(self.player.status) + " for 5 seconds!", 25, BLACK, 11.5, 21.5)
                 if self.gamelevel == 4:
                     self.draw_text(self.screen, "You are " + str(self.player.status) + " for 5 seconds!", 30, BLACK, 2.5, 21)
-            if self.shop_open:
-                self.shop.draw(self.screen)
-            if self.money > 0:
-                self.draw_text(self.screen, "Press Q to open shop!", 20, BLACK, 1.25, 2.75)
 
+            if self.shop.visible:
+                self.shop.draw_menu(self.screen)
+                self.button.draw(self.screen)
+                self.draw_text(self.screen, "Heal - 5", 60, BLACK, (self.shop.x + 50) / TILESIZE , (self.shop.y + 20) / TILESIZE)
+
+            if self.money > 0:
+                self.draw_text(self.screen, "Press Q to open shop!", 30, BLACK, 10, 1)
             pg.display.flip()
+
+    def button_action(self):
+        print("Button clicked!")
+        if self.money >= 5:
+            self.money -= 5
+        self.player.hp = 100
+    
 
     # show the start screen, if space pressed start playing
     def show_start_screen(self):
@@ -244,7 +257,8 @@ class Game:
         # self.player.hp = 100
         # self.draw_text(self.screen, "Game Over! :(", 60, WHITE, 12, 15)
         # self.countdown.quit_timer()
-        self.draw_text(self.screen, "Press R to restart!", 60, WHITE, 10, 15)
+        self.draw_text(self.screen, "You died!", 90, WHITE, 11, 7.5)
+        self.draw_text(self.screen, "Press R to restart!", 70, WHITE, 9, 15)
         # keys = pg.key.get_pressed()
         # if keys[pg.K_r]:
         #     self.gamestage = "start"
@@ -253,10 +267,12 @@ class Game:
         pg.display.flip()
 
     def restart_game(self):
+        self.load_data()
         self.gamestage = "start"  # Set the game stage to start
         self.money = 0
         self.new()
         
+
     
 g = Game()
 

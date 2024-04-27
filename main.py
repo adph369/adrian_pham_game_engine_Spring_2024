@@ -34,7 +34,7 @@ class Game:
 
     # load data: images and map
     def load_data(self):
-        self.gamelevel = 1
+        self.gamelevel = 5
         game_folder = path.dirname(__file__)
         img_folder = path.join(game_folder, 'images')
         map_folder = path.join(game_folder, 'maps')
@@ -221,7 +221,13 @@ class Game:
                     self.draw_text(self.screen, "You are " + str(self.player.status) + " for 5 seconds!", 25, BLACK, 11.5, 21.5)
                 if self.gamelevel == 4:
                     self.draw_text(self.screen, "You are " + str(self.player.status) + " for 5 seconds!", 30, BLACK, 2.5, 21)
+            if self.gamelevel == 5:
+                self.screen.fill(ALMOSTBLACK)
+                self.all_sprites.draw(self.screen)
+                self.draw_text(self.screen, "Congratulations!", 100, WHITE, 7.5, 7.5)
+                self.draw_text(self.screen, "You win!", 100, WHITE, 11, 12.5)
 
+                               
             if self.shop.visible:
                 self.shop.draw_menu(self.screen)
                 self.button.draw(self.screen)

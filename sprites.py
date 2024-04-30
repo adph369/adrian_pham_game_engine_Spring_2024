@@ -22,7 +22,7 @@ class Spritesheet:
         image = pg.Surface((width, height))
         image.blit(self.spritesheet, (0, 0), (x, y, width, height))
         image = pg.transform.scale(image, (width, height))
-        # image = pg.transform.scale(image, (width * 4, height * 4))
+
         return image
 
 # create a player class
@@ -52,11 +52,12 @@ class Player(Sprite):
         self.jumping = False
         self.walking = False        
 
+    # load images for animating
     def load_images(self):
         self.standing_frames = [self.spritesheet.get_image(0, 0, 32, 32), self.spritesheet.get_image(32, 0, 32, 32)]
         self.walking_frames = [self.spritesheet.get_image(0, 0, 32, 32), self.spritesheet.get_image(32, 0, 32, 32)]
     
-    
+    # animate by switching between images
     def animate(self):
         now = pg.time.get_ticks()
         if now - self.last_update > 350:
@@ -191,10 +192,11 @@ class Coin(Sprite):
 
 # enemy class
 class Enemy(Sprite):
-    def __init__(self, game, x, y):
+    def __init__(self, game, x, y, shop):
         self.groups = game.all_sprites, game.enemies
         Sprite.__init__(self, self.groups)
         self.game = game
+        self.shop = shop
         self.image = pg.Surface((TILESIZE, TILESIZE))
         self.image.fill(RED)
         self.rect = self.image.get_rect()
@@ -237,6 +239,10 @@ class Enemy(Sprite):
     
     # constantly updates position, speed, collisions
     def update(self):
+        if self.shop.visible:
+            self.vx, self.vy == 0, 0
+        else:
+            self.vx, self.vy == ENEMY_SPEED, ENEMY_SPEED
         self.x += self.vx * self.game.dt
         self.y += self.vy * self.game.dt
         self.rect.x = self.x
@@ -334,6 +340,7 @@ class PowerUp(Sprite):
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
 
+# create shop class
 class Shop(Sprite):
     def __init__(self, game):
         self.game = game 
@@ -347,17 +354,24 @@ class Shop(Sprite):
         self.menu_surface = pg.Surface((self.width, self.height), flags=pg.SRCALPHA)
         self.menu_surface.fill(TRANSPARENT_BEIGE)
 
+    # draw the shop itself
     def draw_menu(self, screen):
         if self.visible:
             self.menu_surface.fill(TRANSPARENT_BEIGE)
             pg.draw.rect(self.menu_surface, self.color, (self.x, self.y, TILESIZE * 8, TILESIZE * 5))
             screen.blit(self.menu_surface, (self.x, self.y))
 
+    # switch between if shop visible or not
     def toggle_visibility(self):
         self.visible = not self.visible
-
+        # if self.game.gamestage == "playing":
+        #     self.game.gamestage = "shop"
+        # elif self.game.gamestage == "shop":
+        #     self.game.gamestage == "playing"
+    
 # done with help from ChatGPT
 class Button:
+    # initializes button attributes
     def __init__(self, game, text, position, size, color, hover_color, action = None, clickable = True):
         self.game = game
         self.text = text
@@ -370,8 +384,8 @@ class Button:
         self.hovered = False
         self.clickable = clickable
 
+    # draw the object when called
     def draw(self, screen):
-        
         clickable = self.is_clickable()
         # Create a button rectangle at the specified position and size
         button_rect = pg.Rect(self.position, self.size)
@@ -390,7 +404,9 @@ class Button:
         text_rect = text_surface.get_rect(center=button_rect.center)
         screen.blit(text_surface, text_rect)
 
+    # check for click
     def handle_event(self, event):
+        # only changes color or is clicked if conditions are met
         if self.clickable:
             if event.type == pg.MOUSEMOTION:
                 # Check if mouse is hovering over the button
@@ -400,16 +416,14 @@ class Button:
                     # Execute button action if clicked
                     self.action()
 
+    # Check if mouse position is within button bounds
     def is_hovered(self, mouse_pos):
-        # Check if mouse position is within button bounds
         button_rect = pg.Rect(self.position, self.size)
         return button_rect.collidepoint(mouse_pos)
 
-    def set_clickable(self, clickable):
-        self.clickable = clickable 
-
+    # Check if button is clickable - add conditions here
     def is_clickable(self):
         if self.game.money >= 5:
-            self.set_clickable(True)
+            self.clickable = True
         else:
-            self.set_clickable(False)      
+            self.clickable = False  

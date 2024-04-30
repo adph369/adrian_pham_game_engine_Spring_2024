@@ -17,7 +17,7 @@ from math import floor
 
 # creating game class
 class Game:
-    # initializes all code in a class
+    # initializes all attributes in the game
     def __init__(self):
         pg.init()
         self.screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -34,7 +34,7 @@ class Game:
 
     # load data: images and map
     def load_data(self):
-        self.gamelevel = 5
+        self.gamelevel = 1
         game_folder = path.dirname(__file__)
         img_folder = path.join(game_folder, 'images')
         map_folder = path.join(game_folder, 'maps')
@@ -70,16 +70,16 @@ class Game:
                     if tile == 'C':
                         Coin(self, col, row)
                     if tile == 'E':
-                        Enemy(self, col, row)
+                        Enemy(self, col, row, self.shop)
                     if tile == 'X':
                         Chaser(self, col, row)
                     if tile == 'D':
                         Door(self, col, row)
                     if tile == '!':
                         PowerUp(self, col, row)
-                        
+
+    # initialize all variables, setup groups, instantiate classes     
     def new(self):
-        # initialize all variables, setup groups, instantiate classes
         print("Create new game...")
         self.countdown = Timer(self)
         self.shop = Shop(g)
@@ -102,14 +102,15 @@ class Game:
                 if tile == 'C':
                     Coin(self, col, row)
                 if tile == 'E':
-                    Enemy(self, col, row)
+                    Enemy(self, col, row, self.shop)
                 if tile == 'X':
-                    Chaser(self, col, row)
+                    Chaser(self, col, row) 
                 if tile == 'D':
                     Door(self, col, row)
                 if tile == '!':
                     PowerUp(self, col, row)
-    # defining run method - what happens while playing
+
+    # run method - what happens while playing
     def run(self):
         self.playing = True
         while self.playing: 
@@ -123,7 +124,6 @@ class Game:
                 self.draw()
             if self.gamestage == "death":
                 self.game_over()
-            # print(self.gamelevel)
 
     # quit method
     def quit(self):
@@ -136,8 +136,8 @@ class Game:
         self.countdown.ticking()
         self.change_map()
         self.countdown.quit_timer()
-        if self.shop.visible:
-            self.shop.draw_menu(self.screen)
+        # if self.shop.visible:
+        #     self.player.speed = 0
 
 
     # draw grid
@@ -165,10 +165,6 @@ class Game:
                     if event.key == pg.K_q:
                         self.shop.toggle_visibility()
             self.button.handle_event(event)
-
-
-
-
                 
     # draw text
     def draw_text(self, surface, text, size, color, x, y):
@@ -194,6 +190,7 @@ class Game:
         if hp < 25:
             pg.draw.rect(surface, RED, fill_rect)
 
+    # drawing the game
     def draw(self):
         # self.screen.fill(BLACK)
         # if self.gamestage != "game over":
@@ -227,16 +224,18 @@ class Game:
                 self.draw_text(self.screen, "Congratulations!", 100, WHITE, 7.5, 7.5)
                 self.draw_text(self.screen, "You win!", 100, WHITE, 11, 12.5)
 
-                               
+            # if shop visible, draw shop    
             if self.shop.visible:
                 self.shop.draw_menu(self.screen)
                 self.button.draw(self.screen)
                 self.draw_text(self.screen, "Heal - 5", 60, BLACK, (self.shop.x + 50) / TILESIZE , (self.shop.y + 20) / TILESIZE)
 
+            # shop only opens if player has money
             if self.money > 0:
                 self.draw_text(self.screen, "Press Q to open shop!", 30, BLACK, 10, 1)
             pg.display.flip()
 
+    # what button does when clicked
     def button_action(self):
         print("Button clicked!")
         if self.money >= 5:
@@ -253,33 +252,23 @@ class Game:
         if keys[pg.K_SPACE]:
             self.gamestage = "playing"
         pg.display.flip()
-        self.run()
         
     # game over screen
     def game_over(self):
         self.screen.fill(BLACK)
-        for s in self.all_sprites:
-            s.kill()
-        # self.player.hp = 100
-        # self.draw_text(self.screen, "Game Over! :(", 60, WHITE, 12, 15)
-        # self.countdown.quit_timer()
         self.draw_text(self.screen, "You died!", 90, WHITE, 11, 7.5)
         self.draw_text(self.screen, "Press R to restart!", 70, WHITE, 9, 15)
-        # keys = pg.key.get_pressed()
-        # if keys[pg.K_r]:
-        #     self.gamestage = "start"
-        #     for s in self.all_sprites:
-        #         s.kill()
         pg.display.flip()
 
+    # restart game - deletes then recreates everything
     def restart_game(self):
+        for s in self.all_sprites:
+            s.kill()
         self.load_data()
         self.gamestage = "start"  # Set the game stage to start
         self.money = 0
         self.new()
         
-
-    
 g = Game()
 
 # running the function

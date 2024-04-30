@@ -1,6 +1,10 @@
 '''
 # This file was created by: Adrian Pham
 # added hp bar, game levels, power-ups
+
+New feature: Shop
+Design goals: shop, better graphics, start/end screen
+
 '''
 
 # importing necessary libaries

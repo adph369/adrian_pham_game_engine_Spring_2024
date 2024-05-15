@@ -37,7 +37,6 @@ class Game:
         self.dead = False
         self.load_data()
 
-
     # load data: images and map
     def load_data(self):
         self.gamelevel = 1
@@ -53,16 +52,17 @@ class Game:
                 # print(line)
                 self.map_data.append(line)
         button_data = [
-            ("Buy Item 1", (self.shop.x + 55, self.shop.y + 100), (150, 50), FORESTGREEN, CANDYRED, self.button_action),
-            ("Buy Item 2", (self.shop.x + 275, self.shop.y + 100), (150, 50), FORESTGREEN, CANDYRED, self.button_action2),
-            ("Buy Item 3", (self.shop.x + 495, self.shop.y + 100), (150, 50), FORESTGREEN, CANDYRED, self.button_action3),
-            ("Buy Item 4", (self.shop.x + 55, self.shop.y + 300), (150, 50), FORESTGREEN, CANDYRED, self.button_action4),
-            ("Buy Item 5", (self.shop.x + 275, self.shop.y + 100), (150, 50), FORESTGREEN, CANDYRED, self.button_action5),
-            ("Buy Item 6", (self.shop.x + 495, self.shop.y + 300), (150, 50), FORESTGREEN, CANDYRED, self.button_action6)   
+            ("Buy Item 1", (self.shop.x + 55, self.shop.y + 100), (150, 50), FORESTGREEN, CANDYRED, 3, self.button_action),
+            ("Buy Item 2", (self.shop.x + 275, self.shop.y + 100), (150, 50), FORESTGREEN, CANDYRED, 5, self.button_action2),
+            ("Buy Item 3", (self.shop.x + 495, self.shop.y + 100), (150, 50), FORESTGREEN, CANDYRED, 5, self.button_action3),
+            ("Buy Item 4", (self.shop.x + 55, self.shop.y + 300), (150, 50), FORESTGREEN, CANDYRED, 5, self.button_action4),
+            ("Buy Item 5", (self.shop.x + 275, self.shop.y + 300), (150, 50), FORESTGREEN, CANDYRED, 5, self.button_action5),
+            ("Buy Item 6", (self.shop.x + 495, self.shop.y + 300), (150, 50), FORESTGREEN, CANDYRED, 5, self.button_action6)   
         ]
         for data in button_data:
-            text, position, size, color, hover_color, action = data
-            button = Button(self, text, position, size, color, hover_color, action)
+            text, position, size, color, hover_color, action, cost = data
+            button = Button(self, text, position, size, color, hover_color, action, cost)
+
             self.buttons.append(button)
 
 
@@ -267,18 +267,31 @@ class Game:
         
     def button_action2(self):
         print("BUTTON 2 CLICKED")
+        if self.money >= 5:
+            self.money -= 5
 
     def button_action3(self):
         print("BUTTON 3 CLICKED")
+        if self.money >= 5:
+            self.money -= 5
 
     def button_action4(self):
         print("BUTTON 4 CLICKED")
+        if self.money >= 5:
+            self.money -= 5
 
     def button_action5(self):
         print("BUTTON 5 CLICKED")
+        if self.money >= 5:
+            self.money -= 5
 
     def button_action6(self):
         print("BUTTON 6 CLICKED")
+        if self.money >= 5:
+            self.money -= 5
+
+    # def start_button(self):
+    #     self.gamestage = "playing"
 
     # show the start screen, if space pressed start playing
     def show_start_screen(self):
@@ -286,6 +299,7 @@ class Game:
         keys = pg.key.get_pressed()
         self.draw_text(self.screen, "Welcome to That Game!", 90, BLACK, 5, 7.5)
         self.draw_text(self.screen, "Press space to start!", 60, BLACK, 10, 15)
+        # Button("Buy Item 2", (self.shop.x + 275, self.shop.y + 100), (150, 50), FORESTGREEN, CANDYRED, self.start_button)
         if keys[pg.K_SPACE]:
             self.gamestage = "playing"
         pg.display.flip()

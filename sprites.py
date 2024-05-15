@@ -374,7 +374,7 @@ class Shop(Sprite):
 # done with help from ChatGPT
 class Button:
     # initializes button attributes
-    def __init__(self, game, text, position, size, color, hover_color, action = None, clickable = True):
+    def __init__(self, game, text, position, size, color, hover_color, cost, action = None, clickable = True):
         self.game = game
         self.text = text
         self.position = position
@@ -385,10 +385,10 @@ class Button:
         self.font = pg.font.Font(None, 32)  # Font for button text
         self.hovered = False
         self.clickable = clickable
+        self.cost = cost
 
     # draw the object when called
     def draw(self, screen):
-        clickable = self.is_clickable()
         # Create a button rectangle at the specified position and size
         button_rect = pg.Rect(self.position, self.size)
 
@@ -405,7 +405,7 @@ class Button:
         text_surface = self.font.render(self.text, True, pg.Color('white'))
         text_rect = text_surface.get_rect(center=button_rect.center)
         screen.blit(text_surface, text_rect)
-        
+
     # check for click
     def handle_event(self, event):
         # only changes color or is clicked if conditions are met
@@ -421,11 +421,12 @@ class Button:
     # Check if mouse position is within button bounds
     def is_hovered(self, mouse_pos):
         button_rect = pg.Rect(self.position, self.size)
-        return button_rect.collidepoint(mouse_pos)
+        is_hovered = button_rect.collidepoint(mouse_pos)
+        return is_hovered
 
     # Check if button is clickable - add conditions here
     def is_clickable(self):
-        if self.game.money >= 3:
+        if self.game.money >= self.cost:
             self.clickable = True
         else:
             self.clickable = False  

@@ -28,10 +28,11 @@ class Spritesheet:
 # create a player class
 class Player(Sprite):
     # initialize the class, create its attributes
-    def __init__(self, game, x, y):
+    def __init__(self, game, x, y, shop):
         self.groups = game.all_sprites
         Sprite.__init__(self, self.groups)
         self.game = game
+        self.shop = shop
         # self.image = game.player_img
         self.image = pg.Surface((TILESIZE, TILESIZE))
         self.spritesheet = Spritesheet(path.join(image_folder, SPRITESHEET))
@@ -128,38 +129,39 @@ class Player(Sprite):
                 if self.status == "invincible":
                     self.hp += 0
                 if self.status != "invincible":
-                    self.hp -= 3
+                    self.hp -= 3 * 3/8
             if str(hits[0].__class__.__name__) == "Chaser":
                 if self.status == "invincible":
                     self.hp += 0
                 if self.status != "invincible":
-                    self.hp -= 2
+                    self.hp -= 2 * 3/8
             if str(hits[0].__class__.__name__) == "Door":
                 self.changelevel = True
     
     # constantly updates player position and movement
     def update(self):
-        self.animate()
-        self.get_keys()
-        self.x += self.vx * self.game.dt
-        self.y += self.vy * self.game.dt
-        self.rect.x = self.x
-        self.collide_with_walls('x')
-        self.rect.y = self.y
-        self.collide_with_walls('y')
-        # activate collisions
-        self.collide_with_obj(self.game.coins, True)
-        self.collide_with_obj(self.game.enemies, False)
-        self.collide_with_obj(self.game.powerups, True)
-        self.collide_with_obj(self.game.doors, False)
-        # power-up timer
-        if self.game.countdown.cd < 1:
-            self.cooling = False
-        if not self.cooling:
-            self.status = ""
-            self.speed = 300
-        if self.status == "speedy":
-            self.speed = 500
+        if not self.shop.visible:
+            self.animate()
+            self.get_keys()
+            self.x += self.vx * self.game.dt
+            self.y += self.vy * self.game.dt
+            self.rect.x = self.x
+            self.collide_with_walls('x')
+            self.rect.y = self.y
+            self.collide_with_walls('y')
+            # activate collisions
+            self.collide_with_obj(self.game.coins, True)
+            self.collide_with_obj(self.game.enemies, False)
+            self.collide_with_obj(self.game.powerups, True)
+            self.collide_with_obj(self.game.doors, False)
+            # power-up timer
+            if self.game.countdown.cd < 1:
+                self.cooling = False
+            if not self.cooling:
+                self.status = ""
+                self.speed = 300
+            if self.status == "speedy":
+                self.speed = 500
         
     
 
@@ -206,6 +208,7 @@ class Enemy(Sprite):
         self.rect.y = y * TILESIZE
         self.vx, self.vy = ENEMY_SPEED, ENEMY_SPEED
         self.speed = 1
+        self.moving = True
         if self.vx != 0 and self.vy != 0:
             self.vx *= 0.7071
             self.vy *= 0.7071
@@ -239,23 +242,21 @@ class Enemy(Sprite):
     
     # constantly updates position, speed, collisions
     def update(self):
-        if self.shop.visible:
-            self.vx, self.vy == 0, 0
-        else:
-            self.vx, self.vy == ENEMY_SPEED, ENEMY_SPEED
-        self.x += self.vx * self.game.dt
-        self.y += self.vy * self.game.dt
-        self.rect.x = self.x
-        self.collide_with_walls('x')
-        self.rect.y = self.y
-        self.collide_with_walls('y')
+        if not self.shop.visible:
+            self.x += self.vx * self.game.dt
+            self.y += self.vy * self.game.dt
+            self.rect.x = self.x
+            self.collide_with_walls('x')
+            self.rect.y = self.y
+            self.collide_with_walls('y')
 
 # chaser (type of enemy) class
 class Chaser(Sprite):
-    def __init__(self, game, x, y):
+    def __init__(self, game, x, y, shop):
         self.groups = game.all_sprites, game.enemies
         Sprite.__init__(self, self.groups)
         self.game = game
+        self.shop = shop
         self.image = pg.Surface((TILESIZE, TILESIZE))
         self.image.fill(LIGHTRED)
         self.rect = self.image.get_rect()
@@ -294,23 +295,24 @@ class Chaser(Sprite):
 
     # constantly updates motion and position
     def update(self):
-        self.x += self.vx * self.game.dt
-        self.y += self.vy * self.game.dt
+        if not self.shop.visible:
+            self.x += self.vx * self.game.dt
+            self.y += self.vy * self.game.dt
 
-        # if chaser coordinates are not same as player's move until they are
-        if self.rect.x < self.game.player.rect.x:
-            self.vx = ENEMY_SPEED
-        if self.rect.x > self.game.player.rect.x:
-            self.vx = -ENEMY_SPEED    
-        if self.rect.y < self.game.player.rect.y:
-            self.vy = ENEMY_SPEED
-        if self.rect.y > self.game.player.rect.y:
-            self.vy = -ENEMY_SPEED
+            # if chaser coordinates are not same as player's move until they are
+            if self.rect.x < self.game.player.rect.x:
+                self.vx = ENEMY_SPEED
+            if self.rect.x > self.game.player.rect.x:
+                self.vx = -ENEMY_SPEED    
+            if self.rect.y < self.game.player.rect.y:
+                self.vy = ENEMY_SPEED
+            if self.rect.y > self.game.player.rect.y:
+                self.vy = -ENEMY_SPEED
 
-        self.rect.x = self.x
-        self.collide_with_walls('x')
-        self.rect.y = self.y
-        self.collide_with_walls('y')
+            self.rect.x = self.x
+            self.collide_with_walls('x')
+            self.rect.y = self.y
+            self.collide_with_walls('y')
 
 # create door class
 class Door(Sprite):
@@ -345,19 +347,19 @@ class Shop(Sprite):
     def __init__(self, game):
         self.game = game 
         self.visible = False
-        self.width = 260
-        self.height = 160
-        self.color = TRANSPARENT_BEIGE
-        self.x = 50
-        self.y = 550
+        self.width = 809    
+        self.height = 500
+        self.color = TRANSPARENT_GRAY
+        self.x = 120
+        self.y = 134
         # self.menu_surface = pg.Surface((self.width, self.height))
         self.menu_surface = pg.Surface((self.width, self.height), flags=pg.SRCALPHA)
-        self.menu_surface.fill(TRANSPARENT_BEIGE)
+        self.menu_surface.fill(TRANSPARENT_GRAY)
 
     # draw the shop itself
     def draw_menu(self, screen):
         if self.visible:
-            self.menu_surface.fill(TRANSPARENT_BEIGE)
+            self.menu_surface.fill(TRANSPARENT_GRAY)
             pg.draw.rect(self.menu_surface, self.color, (self.x, self.y, TILESIZE * 8, TILESIZE * 5))
             screen.blit(self.menu_surface, (self.x, self.y))
 
@@ -403,7 +405,7 @@ class Button:
         text_surface = self.font.render(self.text, True, pg.Color('white'))
         text_rect = text_surface.get_rect(center=button_rect.center)
         screen.blit(text_surface, text_rect)
-
+        
     # check for click
     def handle_event(self, event):
         # only changes color or is clicked if conditions are met
@@ -423,7 +425,8 @@ class Button:
 
     # Check if button is clickable - add conditions here
     def is_clickable(self):
-        if self.game.money >= 5:
+        if self.game.money >= 3:
             self.clickable = True
         else:
             self.clickable = False  
+

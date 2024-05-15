@@ -30,11 +30,13 @@ class Game:
         pg.key.set_repeat(500,100)
         self.shop_open = False
         self.shop = Shop(self)
+        self.buttons = []
         self.gamestage = "start"
-        self.load_data()
         self.money = 0
         self.cooling = False
         self.dead = False
+        self.load_data()
+
 
     # load data: images and map
     def load_data(self):
@@ -45,11 +47,25 @@ class Game:
         self.player_img = pg.image.load(path.join(img_folder, 'man.png')).convert_alpha()
         self.coin_img = pg.image.load(path.join(img_folder, 'coin.png')).convert_alpha()
         self.map_data = []
+
         with open(path.join(map_folder, 'map' + str(self.gamelevel) + '.txt'), 'rt') as f:
             for line in f:
                 # print(line)
                 self.map_data.append(line)
-    
+        button_data = [
+            ("Buy Item 1", (self.shop.x + 55, self.shop.y + 100), (150, 50), FORESTGREEN, CANDYRED, self.button_action),
+            ("Buy Item 2", (self.shop.x + 275, self.shop.y + 100), (150, 50), FORESTGREEN, CANDYRED, self.button_action2),
+            ("Buy Item 3", (self.shop.x + 495, self.shop.y + 100), (150, 50), FORESTGREEN, CANDYRED, self.button_action3),
+            ("Buy Item 4", (self.shop.x + 55, self.shop.y + 300), (150, 50), FORESTGREEN, CANDYRED, self.button_action4),
+            ("Buy Item 5", (self.shop.x + 275, self.shop.y + 100), (150, 50), FORESTGREEN, CANDYRED, self.button_action5),
+            ("Buy Item 6", (self.shop.x + 495, self.shop.y + 300), (150, 50), FORESTGREEN, CANDYRED, self.button_action6)   
+        ]
+        for data in button_data:
+            text, position, size, color, hover_color, action = data
+            button = Button(self, text, position, size, color, hover_color, action)
+            self.buttons.append(button)
+
+
     # change level maps
     def change_map(self):
         game_folder = path.dirname(__file__)
@@ -70,13 +86,13 @@ class Game:
                     if tile == '1':
                         Wall(self, col, row)
                     if tile == 'P': 
-                        self.player = Player(self, col, row)
+                        self.player = Player(self, col, row, self.shop)
                     if tile == 'C':
                         Coin(self, col, row)
                     if tile == 'E':
                         Enemy(self, col, row, self.shop)
                     if tile == 'X':
-                        Chaser(self, col, row)
+                        Chaser(self, col, row, self.shop)
                     if tile == 'D':
                         Door(self, col, row)
                     if tile == '!':
@@ -87,12 +103,11 @@ class Game:
         print("Create new game...")
         self.countdown = Timer(self)
         self.shop = Shop(g)
-        self.button = Button(self, "BUY", (self.shop.x + 55, self.shop.y + 100), (150, 50), FORESTGREEN, CANDYRED, action=self.button_action, clickable = True)
         self.all_sprites = pg.sprite.Group()
         self.health = pg.sprite.Group()
         self.coins = pg.sprite.Group()
         self.walls = pg.sprite.Group()
-        self.enemies = pg.sprite.Group()
+        self.enemies = pg.sprite.Group() 
         self.doors = pg.sprite.Group()
         self.powerups = pg.sprite.Group()
         # drawing the game map
@@ -102,17 +117,19 @@ class Game:
                 if tile == '1':
                     Wall(self, col, row)
                 if tile == 'P': 
-                    self.player = Player(self, col, row)
+                    self.player = Player(self, col, row, self.shop)
                 if tile == 'C':
                     Coin(self, col, row)
                 if tile == 'E':
                     Enemy(self, col, row, self.shop)
                 if tile == 'X':
-                    Chaser(self, col, row) 
+                    Chaser(self, col, row, self.shop) 
                 if tile == 'D':
                     Door(self, col, row)
                 if tile == '!':
                     PowerUp(self, col, row)
+
+
 
     # run method - what happens while playing
     def run(self):
@@ -142,8 +159,7 @@ class Game:
         self.countdown.quit_timer()
         # if self.shop.visible:
         #     self.player.speed = 0
-
-
+            
     # draw grid
     def draw_grid(self):
         for x in range(0, WIDTH, TILESIZE):
@@ -168,7 +184,8 @@ class Game:
                 if self.money > 0:             
                     if event.key == pg.K_q:
                         self.shop.toggle_visibility()
-            self.button.handle_event(event)
+            for button in self.buttons:
+                button.handle_event(event)
                 
     # draw text
     def draw_text(self, surface, text, size, color, x, y):
@@ -227,12 +244,14 @@ class Game:
                 self.all_sprites.draw(self.screen)
                 self.draw_text(self.screen, "Congratulations!", 100, WHITE, 7.5, 7.5)
                 self.draw_text(self.screen, "You win!", 100, WHITE, 11, 12.5)
+    
 
             # if shop visible, draw shop    
             if self.shop.visible:
                 self.shop.draw_menu(self.screen)
-                self.button.draw(self.screen)
-                self.draw_text(self.screen, "Heal - 5", 60, BLACK, (self.shop.x + 50) / TILESIZE , (self.shop.y + 20) / TILESIZE)
+                for button in self.buttons:
+                    button.draw(self.screen)
+                self.draw_text(self.screen, "Heal - 3", 60, BLACK, (self.shop.x + 50) / TILESIZE , (self.shop.y + 20) / TILESIZE)
 
             # shop only opens if player has money
             if self.money > 0:
@@ -242,10 +261,24 @@ class Game:
     # what button does when clicked
     def button_action(self):
         print("Button clicked!")
-        if self.money >= 5:
-            self.money -= 5
+        if self.money >= 3:
+            self.money -= 3
         self.player.hp = 100
-    
+        
+    def button_action2(self):
+        print("BUTTON 2 CLICKED")
+
+    def button_action3(self):
+        print("BUTTON 3 CLICKED")
+
+    def button_action4(self):
+        print("BUTTON 4 CLICKED")
+
+    def button_action5(self):
+        print("BUTTON 5 CLICKED")
+
+    def button_action6(self):
+        print("BUTTON 6 CLICKED")
 
     # show the start screen, if space pressed start playing
     def show_start_screen(self):

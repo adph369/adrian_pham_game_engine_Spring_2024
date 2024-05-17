@@ -36,6 +36,8 @@ class Game:
         self.cooling = False
         self.dead = False
         self.load_data()
+        self.bgcolor = BGCOLOR
+        self.bgcolorchange = False
 
     # load data: images and map
     def load_data(self):
@@ -49,22 +51,21 @@ class Game:
 
         with open(path.join(map_folder, 'map' + str(self.gamelevel) + '.txt'), 'rt') as f:
             for line in f:
-                # print(line)
                 self.map_data.append(line)
+
+        # create multiple buttons through the use of a list, later drawn in draw
         button_data = [
-            ("Buy Item 1", (self.shop.x + 55, self.shop.y + 100), (150, 50), FORESTGREEN, CANDYRED, 3, self.button_action),
-            ("Buy Item 2", (self.shop.x + 275, self.shop.y + 100), (150, 50), FORESTGREEN, CANDYRED, 5, self.button_action2),
-            ("Buy Item 3", (self.shop.x + 495, self.shop.y + 100), (150, 50), FORESTGREEN, CANDYRED, 5, self.button_action3),
-            ("Buy Item 4", (self.shop.x + 55, self.shop.y + 300), (150, 50), FORESTGREEN, CANDYRED, 5, self.button_action4),
-            ("Buy Item 5", (self.shop.x + 275, self.shop.y + 300), (150, 50), FORESTGREEN, CANDYRED, 5, self.button_action5),
-            ("Buy Item 6", (self.shop.x + 495, self.shop.y + 300), (150, 50), FORESTGREEN, CANDYRED, 5, self.button_action6)   
-        ]
+            ("Buy", (self.shop.x + 55, self.shop.y + 150), (150, 50), FORESTGREEN, CANDYRED, 2, self.button_action),
+            ("Buy", (self.shop.x + 325, self.shop.y + 150), (150, 50), FORESTGREEN, CANDYRED, 3, self.button_action2),
+            ("Buy", (self.shop.x + 580, self.shop.y + 150), (150, 50), FORESTGREEN, CANDYRED, 5, self.button_action3),
+            ("Buy", (self.shop.x + 55, self.shop.y + 400), (150, 50), FORESTGREEN, CANDYRED, 5, self.button_action4),
+            ("Buy", (self.shop.x + 325, self.shop.y + 400), (150, 50), FORESTGREEN, CANDYRED, 5, self.button_action5),
+            ("Buy", (self.shop.x + 580, self.shop.y + 400), (150, 50), FORESTGREEN, CANDYRED, 15, self.button_action6)   
+        ] 
         for data in button_data:
-            text, position, size, color, hover_color, action, cost = data
-            button = Button(self, text, position, size, color, hover_color, action, cost)
-
+            text, position, size, color, hover_color, cost, action = data
+            button = Button(self, text, position, size, color, hover_color, cost, action)
             self.buttons.append(button)
-
 
     # change level maps
     def change_map(self):
@@ -76,7 +77,14 @@ class Game:
                 s.kill()
             # sets to false so that the level doesn't keep running
             self.player.changelevel = False
-            self.gamelevel += 1
+
+            # continues looping through levels 
+            if self.gamelevel == 4:
+                self.gamelevel = randint(1, 4)
+            else:
+                self.gamelevel += 1
+            
+            # create map itself
             self.map_data = []
             with open(path.join(map_folder, 'map' + str(self.gamelevel) + '.txt'), 'rt') as f:
                 for line in f:
@@ -181,9 +189,8 @@ class Game:
                 if self.gamestage == "death": 
                     if event.key == pg.K_r:
                         self.restart_game()
-                if self.money > 0:             
-                    if event.key == pg.K_q:
-                        self.shop.toggle_visibility()
+                if event.key == pg.K_q:
+                    self.shop.toggle_visibility()
             for button in self.buttons:
                 button.handle_event(event)
                 
@@ -215,7 +222,7 @@ class Game:
     def draw(self):
         # self.screen.fill(BLACK)
         # if self.gamestage != "game over":
-            self.screen.fill(BGCOLOR)
+            self.screen.fill(self.bgcolor)
             # draws the grid to show squares, unnecessary so removed to look nicer
             # self.draw_grid()
             self.all_sprites.draw(self.screen)
@@ -235,7 +242,7 @@ class Game:
                     self.draw_text(self.screen, "You are " + str(self.player.status) + " for 5 seconds!", 30, BLACK, 1.25, 21)
                 if self.gamelevel == 2:
                     self.draw_text(self.screen, "You are " + str(self.player.status) + " for 5 seconds!", 25, BLACK, 21.5, 1.25)
-                if self.gamelevel ==3:
+                if self.gamelevel == 3:
                     self.draw_text(self.screen, "You are " + str(self.player.status) + " for 5 seconds!", 25, BLACK, 11.5, 21.5)
                 if self.gamelevel == 4:
                     self.draw_text(self.screen, "You are " + str(self.player.status) + " for 5 seconds!", 30, BLACK, 2.5, 21)
@@ -245,50 +252,74 @@ class Game:
                 self.draw_text(self.screen, "Congratulations!", 100, WHITE, 7.5, 7.5)
                 self.draw_text(self.screen, "You win!", 100, WHITE, 11, 12.5)
     
-
             # if shop visible, draw shop    
             if self.shop.visible:
                 self.shop.draw_menu(self.screen)
                 for button in self.buttons:
                     button.draw(self.screen)
-                self.draw_text(self.screen, "Heal - 3", 60, BLACK, (self.shop.x + 50) / TILESIZE , (self.shop.y + 20) / TILESIZE)
+                self.draw_text(self.screen, "Coin - 2", 60, BLACK, (self.shop.x + 55) / TILESIZE , (self.shop.y + 85) / TILESIZE)
+                self.draw_text(self.screen, "Heal - 3", 60, BLACK, (self.shop.x + 325) / TILESIZE , (self.shop.y + 85) / TILESIZE)
+                self.draw_text(self.screen, "Speed Boost - 5", 45, BLACK, (self.shop.x + 545) / TILESIZE , (self.shop.y + 90) / TILESIZE)
+                self.draw_text(self.screen, "Temporary", 45, BLACK, (self.shop.x + 45) / TILESIZE , (self.shop.y + 315) / TILESIZE)
+                self.draw_text(self.screen, "Shield - 5", 45, BLACK, (self.shop.x + 55) / TILESIZE , (self.shop.y + 355) / TILESIZE)
+                self.draw_text(self.screen, "Map Color", 35, BLACK, (self.shop.x + 335) / TILESIZE , (self.shop.y + 325) / TILESIZE)
+                self.draw_text(self.screen, "Change - 5", 35, BLACK, (self.shop.x + 330) / TILESIZE , (self.shop.y + 365) / TILESIZE)
+                self.draw_text(self.screen, "Win - 15", 50, BLACK, (self.shop.x + 570) / TILESIZE , (self.shop.y + 335) / TILESIZE)
 
-            # shop only opens if player has money
-            if self.money > 0:
-                self.draw_text(self.screen, "Press Q to open shop!", 30, BLACK, 10, 1)
+            self.draw_text(self.screen, "Press Q to open shop!", 30, BLACK, 10, 1)
             pg.display.flip()
 
-    # what button does when clicked
+    # what buttons do when clicked
+    # buy a coin for two coins
     def button_action(self):
         print("Button clicked!")
+        if self.money >= 2:
+            self.money -= 1
+
+    # heal character
+    def button_action2(self):
+        print("BUTTON 2 CLICKED")
         if self.money >= 3:
             self.money -= 3
         self.player.hp = 100
-        
-    def button_action2(self):
-        print("BUTTON 2 CLICKED")
-        if self.money >= 5:
-            self.money -= 5
 
+    # speed boost
     def button_action3(self):
         print("BUTTON 3 CLICKED")
         if self.money >= 5:
             self.money -= 5
+        self.player.speed = 450
+        self.countdown.cd = 7
+        self.player.cooling = True
+        self.player.status = "speedy"
 
+    # shield
     def button_action4(self):
         print("BUTTON 4 CLICKED")
         if self.money >= 5:
             self.money -= 5
+        self.countdown.cd = 7
+        self.player.cooling = True
+        self.player.status = "invincible"
 
+    # change map color
     def button_action5(self):
         print("BUTTON 5 CLICKED")
         if self.money >= 5:
             self.money -= 5
+        self.bgcolor = choice(BGCOLORS)
 
+
+    # win
     def button_action6(self):
         print("BUTTON 6 CLICKED")
-        if self.money >= 5:
-            self.money -= 5
+        if self.money >= 15:
+            self.money -= 15
+        self.gamelevel = 5
+        for s in self.all_sprites:
+            s.kill()
+        self.change_map()
+        
 
     # def start_button(self):
     #     self.gamestage = "playing"

@@ -129,17 +129,18 @@ class Player(Sprite):
                 if self.status == "invincible":
                     self.hp += 0
                 if self.status != "invincible":
-                    self.hp -= 3 * 3/8
+                    self.hp -= 6 * 3/8
             if str(hits[0].__class__.__name__) == "Chaser":
                 if self.status == "invincible":
                     self.hp += 0
                 if self.status != "invincible":
-                    self.hp -= 2 * 3/8
+                    self.hp -= 4 * 3/8
             if str(hits[0].__class__.__name__) == "Door":
                 self.changelevel = True
     
     # constantly updates player position and movement
     def update(self):
+        # if shop is not open
         if not self.shop.visible:
             self.animate()
             self.get_keys()
@@ -352,7 +353,7 @@ class Shop(Sprite):
         self.color = TRANSPARENT_GRAY
         self.x = 120
         self.y = 134
-        # self.menu_surface = pg.Surface((self.width, self.height))
+        # transparent shop menu
         self.menu_surface = pg.Surface((self.width, self.height), flags=pg.SRCALPHA)
         self.menu_surface.fill(TRANSPARENT_GRAY)
 
@@ -366,12 +367,8 @@ class Shop(Sprite):
     # switch between if shop visible or not
     def toggle_visibility(self):
         self.visible = not self.visible
-        # if self.game.gamestage == "playing":
-        #     self.game.gamestage = "shop"
-        # elif self.game.gamestage == "shop":
-        #     self.game.gamestage == "playing"
+
     
-# done with help from ChatGPT
 class Button:
     # initializes button attributes
     def __init__(self, game, text, position, size, color, hover_color, cost, action = None, clickable = True):
@@ -391,7 +388,6 @@ class Button:
     def draw(self, screen):
         # Create a button rectangle at the specified position and size
         button_rect = pg.Rect(self.position, self.size)
-
         # Change button color when hovered
         if self.hovered and self.clickable:
             color = self.hover_color
@@ -409,6 +405,7 @@ class Button:
     # check for click
     def handle_event(self, event):
         # only changes color or is clicked if conditions are met
+        self.is_clickable()
         if self.clickable:
             if event.type == pg.MOUSEMOTION:
                 # Check if mouse is hovering over the button
@@ -419,12 +416,13 @@ class Button:
                     self.action()
 
     # Check if mouse position is within button bounds
+    # done with help from ChatGPT
     def is_hovered(self, mouse_pos):
         button_rect = pg.Rect(self.position, self.size)
         is_hovered = button_rect.collidepoint(mouse_pos)
         return is_hovered
 
-    # Check if button is clickable - add conditions here
+    # Check if button is clickable - has to have enough coins to be able to click
     def is_clickable(self):
         if self.game.money >= self.cost:
             self.clickable = True
